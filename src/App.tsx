@@ -60,7 +60,23 @@ function App() {
           })}
         </div>
         <div className="flex items-center gap-3 shrink-0">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#2c2c2c] text-white text-xs font-semibold rounded-lg hover:bg-black transition-colors">
+          <button
+            onClick={() => {
+              const store = useStore.getState();
+              if (!store.blueprintUrl) {
+                // Step 1: trigger file picker (no-op, user uses sidebar)
+              } else if (store.isExtracting) {
+                // Step 2: still extracting, do nothing
+              } else if (store.model.rooms.length > 0 && store.workspaceMode === 'plan') {
+                // Step 3→4: switch to 3D
+                store.setWorkspaceMode('3d');
+              } else if (store.workspaceMode === '3d') {
+                // Step 4→5: switch to split for validation
+                store.setWorkspaceMode('split');
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#2c2c2c] text-white text-xs font-semibold rounded-lg hover:bg-black transition-colors"
+          >
             Continue
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
