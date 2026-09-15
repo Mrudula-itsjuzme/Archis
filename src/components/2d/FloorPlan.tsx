@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useStore } from '../../store/useStore';
 import Room2D from './Room2D';
+import PlanViewToggle from './PlanViewToggle';
 
 export default function FloorPlan() {
   const model = useStore(state => state.model);
@@ -99,6 +100,7 @@ export default function FloorPlan() {
           }}
         />
       ))}
+      <PlanViewToggle />
     </div>
   );
 }

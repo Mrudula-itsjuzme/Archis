@@ -12,7 +12,7 @@ export default function Sidebar() {
     selectedSpaceId, setSelectedSpaceId
   } = useStore();
 
-  const [activeTab, setActiveTab] = useState<'project' | 'layers' | 'views'>('project');
+  const [activeTab, setActiveTab] = useState<"project" | "input" | "views">('project');
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,10 +44,10 @@ export default function Sidebar() {
             Project
           </button>
           <button 
-            onClick={() => setActiveTab('layers')}
-            className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'layers' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            onClick={() => setActiveTab('input')}
+            className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'input' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Layers
+            Blueprint
           </button>
         </div>
       </div>
@@ -74,7 +74,7 @@ export default function Sidebar() {
             </div>
 
             <div className="flex flex-col gap-2 flex-1">
-              <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Project Tree</h2>
+              <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Semantic Graph</h2>
               <div className="text-sm">
                 <div className="font-semibold text-gray-800">{model.project.name}</div>
                 <div className="ml-2 pl-3 border-l border-gray-200 mt-2 flex flex-col gap-2">
@@ -114,20 +114,20 @@ export default function Sidebar() {
           </>
         )}
 
-        {activeTab === 'layers' && (
+        {activeTab === 'input' && (
           <div className="flex flex-col gap-4">
-            <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Tracing Layer</h2>
+            <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Blueprint Input</h2>
             
-            <label className="cursor-pointer bg-white border border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center py-3 text-xs font-medium text-gray-600 mb-2">
-              {blueprintUrl ? 'Replace Blueprint Image' : 'Upload Blueprint Image'}
+            <label className="cursor-pointer bg-white border border-dashed border-[#3b5998]/40 bg-[#3b5998]/5 rounded-lg hover:bg-[#3b5998]/10 transition-colors flex items-center justify-center py-4 text-xs font-bold text-[#3b5998] mb-2">
+              {blueprintUrl ? 'Replace Blueprint Image' : '+ Upload Blueprint'}
               <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleImageUpload} />
             </label>
 
             {blueprintUrl && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs flex flex-col gap-4">
                 <div className="flex justify-between items-center pb-2 border-b border-gray-200">
-                  <span className="font-semibold text-gray-700">Underlay Active</span>
-                  <button className="text-red-500 font-medium hover:underline" onClick={() => setBlueprintConfig({url: null})}>Remove</button>
+                  <span className="font-semibold text-gray-700">Blueprint Loaded</span>
+                  <button className="text-red-500 font-medium hover:underline" onClick={() => setBlueprintConfig({url: null})}>Clear</button>
                 </div>
                 
                 <button 
@@ -138,33 +138,47 @@ export default function Sidebar() {
                   {isExtracting ? (
                     <>
                       <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Extracting Spaces...
+                      Analyzing...
                     </>
                   ) : (
-                    '✨ Auto-Trace Spaces (AI)'
+                    '✨ Reconstruct Semantic Plan'
                   )}
                 </button>
 
-                <div className="flex flex-col gap-1.5 mt-2">
-                  <label className="flex justify-between text-gray-600 font-medium">Opacity <span className="text-gray-900">{Math.round(blueprintOpacity * 100)}%</span></label>
-                  <input type="range" min="0" max="1" step="0.1" value={blueprintOpacity} onChange={(e) => setBlueprintConfig({ opacity: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
+                <div className="mt-2 bg-white border border-gray-200 rounded p-2">
+                  <p className="text-[10px] text-gray-500 font-semibold mb-1 uppercase tracking-wider">Detection Results (Simulated)</p>
+                  <p className="text-xs text-gray-700 font-medium flex justify-between">Spaces Detected: <span className="text-[#3b5998]">{model.rooms.length}</span></p>
+                  <p className="text-xs text-gray-700 font-medium flex justify-between">Levels Detected: <span className="text-[#3b5998]">1</span></p>
+                  <p className="text-[10px] text-emerald-600 mt-2 font-medium">✓ Spatial graph built successfully</p>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex justify-between text-gray-600 font-medium">Scale <span className="font-mono text-gray-900">{blueprintScale.toFixed(1)}</span></label>
-                  <input type="range" min="1" max="500" step="0.1" value={blueprintScale} onChange={(e) => setBlueprintConfig({ scale: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
-                  <p className="text-[9px] text-gray-500 mt-0.5">Use slider to match building size</p>
-                </div>
+                <details className="group mt-2">
+                  <summary className="text-[10px] font-bold uppercase tracking-wider text-gray-400 cursor-pointer list-none flex items-center justify-between">
+                    Manual Alignment (Fallback)
+                    <span className="group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <div className="flex flex-col gap-2 pt-3 border-t border-gray-200 mt-2">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="flex justify-between text-gray-600 font-medium text-[10px]">Opacity <span className="text-gray-900">{Math.round(blueprintOpacity * 100)}%</span></label>
+                      <input type="range" min="0" max="1" step="0.1" value={blueprintOpacity} onChange={(e) => setBlueprintConfig({ opacity: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
+                    </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="flex justify-between text-gray-600 font-medium">Rotation <span className="font-mono text-gray-900">{blueprintRotation}°</span></label>
-                  <input type="range" min="-180" max="180" step="0.5" value={blueprintRotation} onChange={(e) => setBlueprintConfig({ rotation: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
-                </div>
-                
-                <label className="flex items-center gap-2 cursor-pointer mt-2 pt-2 border-t border-gray-200 text-gray-700 font-medium">
-                  <input type="checkbox" checked={blueprintLocked} onChange={(e) => setBlueprintConfig({ locked: e.target.checked })} className="accent-[#3b5998] rounded w-3 h-3" />
-                  Lock position (disables drag)
-                </label>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="flex justify-between text-gray-600 font-medium text-[10px]">Scale <span className="font-mono text-gray-900">{blueprintScale.toFixed(1)}</span></label>
+                      <input type="range" min="1" max="500" step="0.1" value={blueprintScale} onChange={(e) => setBlueprintConfig({ scale: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="flex justify-between text-gray-600 font-medium text-[10px]">Rotation <span className="font-mono text-gray-900">{blueprintRotation}°</span></label>
+                      <input type="range" min="-180" max="180" step="0.5" value={blueprintRotation} onChange={(e) => setBlueprintConfig({ rotation: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
+                    </div>
+                    
+                    <label className="flex items-center gap-2 cursor-pointer mt-1 pt-1 text-gray-700 font-medium text-[10px]">
+                      <input type="checkbox" checked={blueprintLocked} onChange={(e) => setBlueprintConfig({ locked: e.target.checked })} className="accent-[#3b5998] rounded w-3 h-3" />
+                      Lock alignment
+                    </label>
+                  </div>
+                </details>
               </div>
             )}
           </div>

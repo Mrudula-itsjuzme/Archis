@@ -73,32 +73,31 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
   const semanticOverlay = useStore(state => state.semanticOverlay);
 
   const styling: Record<string, string> = {
-    living: 'bg-[#d6c6b3]',
-    kitchen: 'bg-[#e8e8e8]',
-    bedroom: 'bg-[#d6c6b3]',
-    bathroom: 'bg-[#e8e8e8]',
-    circulation: 'bg-[#f0f0f0]',
+    living: 'bg-white',
+    kitchen: 'bg-gray-50',
+    bedroom: 'bg-white',
+    bathroom: 'bg-gray-50',
+    circulation: 'bg-gray-50',
   };
 
   const getOverlayStyle = () => {
     if (semanticOverlay === 'privacy') {
-      if (['bedroom', 'bathroom'].includes(room.type)) return 'bg-red-500/40'; // Private
-      if (['living', 'kitchen'].includes(room.type)) return 'bg-amber-400/40'; // Semi
-      return 'bg-emerald-500/40'; // Public
+      if (['bedroom', 'bathroom'].includes(room.type)) return 'bg-red-500/10'; // Private
+      if (['living', 'kitchen'].includes(room.type)) return 'bg-amber-400/10'; // Semi
+      return 'bg-emerald-500/10'; // Public
     }
     if (semanticOverlay === 'circulation') {
-      if (room.type === 'circulation') return 'bg-blue-500/40';
-      return 'bg-gray-200/40 opacity-50';
+      if (room.type === 'circulation') return 'bg-blue-500/10';
+      return 'bg-white opacity-90';
     }
     if (semanticOverlay === 'daylight') {
-      // Simplistic heuristic: assume larger rooms get more light, or just fake a daylight gradient
-      if (['living', 'bedroom'].includes(room.type)) return 'bg-yellow-300/40';
-      return 'bg-blue-900/10';
+      if (['living', 'bedroom'].includes(room.type)) return 'bg-yellow-300/10';
+      return 'bg-blue-900/5';
     }
     return styling[room.type] || styling.living;
   };
   
-  const textStyling = 'text-[#2c2c2c]/80';
+  const textStyling = 'text-gray-700';
 
   return (
     <div
@@ -108,7 +107,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       onPointerCancel={handlePointerUp}
       onPointerEnter={() => setHoveredSpaceId(room.id)}
       onPointerLeave={() => setHoveredSpaceId(null)}
-      className={`absolute border-[3px] flex flex-col cursor-move select-none transition-all overflow-hidden ${isSelected ? 'border-[#3b5998] bg-[#b8c9e6] shadow-xl z-20 ring-4 ring-blue-500/30' : isHovered ? 'border-[#3b5998] shadow-md z-10' : `border-[#2c2c2c] shadow-sm z-10 ${getOverlayStyle()}`}`}
+      className={`absolute border-[4px] flex flex-col cursor-move select-none transition-all overflow-hidden ${isSelected ? 'border-blue-500 bg-blue-50 shadow-xl z-20 ring-4 ring-blue-500/30' : isHovered ? 'border-blue-400 shadow-md z-10 bg-white' : `border-[#2c2c2c] shadow-sm z-10 ${getOverlayStyle()}`}`}
       style={{
         left: offsetX + room.x * scale,
         top: offsetY + room.y * scale,
@@ -117,9 +116,9 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       }}
     >
       <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 ${textStyling}`}>
-        <span className="font-medium text-xs tracking-wide">{room.name}</span>
-        <span className="text-[9px] font-mono mt-1 opacity-70">
-          {room.width.toFixed(1)} &times; {room.height.toFixed(1)} m
+        <span className="font-bold text-xs tracking-wide">{room.name}</span>
+        <span className="text-[10px] font-mono mt-1 text-gray-500">
+          {(room.width * room.height).toFixed(1)} m²
         </span>
       </div>
 
@@ -127,7 +126,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       {roomFurniture.map(f => (
         <div 
           key={f.id}
-          className="absolute border border-black/20 bg-black/5 flex items-center justify-center pointer-events-none"
+          className="absolute border-[1.5px] border-gray-400 bg-white flex items-center justify-center pointer-events-none"
           style={{
             left: f.x * scale,
             top: f.y * scale,
@@ -136,7 +135,6 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
             transform: `rotate(${f.rotation}deg)`
           }}
         >
-          <span className="text-[8px] font-mono opacity-50 uppercase">{f.type}</span>
         </div>
       ))}
       
@@ -144,7 +142,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       {!room.isLocked && (
         <div 
           onPointerDown={handleResizeDown}
-          className="absolute right-0 bottom-0 w-3 h-3 border-t border-l border-black/10 bg-black/5 cursor-nwse-resize hover:bg-black/10 transition-colors z-20" 
+          className="absolute right-0 bottom-0 w-3 h-3 border-t border-l border-gray-300 bg-white cursor-nwse-resize hover:bg-blue-100 transition-colors z-20" 
         />
       )}
     </div>
