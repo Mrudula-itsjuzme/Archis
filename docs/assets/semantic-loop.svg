@@ -1,0 +1,74 @@
+<svg width="1440" height="620" viewBox="0 0 1440 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1440" height="620" fill="#F4F3F0"/>
+  <text x="86" y="82" fill="#252525" font-family="Georgia,serif" font-size="34">The building is the source of truth.</text>
+  <text x="86" y="116" fill="#77736D" font-family="Inter,Arial,sans-serif" font-size="15">2D and 3D are views. Constraints and alternatives act on the model, not on disconnected files.</text>
+
+  <g transform="translate(88 182)">
+    <rect width="250" height="270" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.16"/>
+    <text x="24" y="38" fill="#807C75" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.8">INPUT / AUTHORSHIP</text>
+    <text x="24" y="82" fill="#292929" font-family="Georgia,serif" font-size="22">Architect's idea</text>
+    <text x="24" y="118" fill="#66625C" font-family="Inter,Arial,sans-serif" font-size="12">site + first draft</text>
+    <text x="24" y="143" fill="#66625C" font-family="Inter,Arial,sans-serif" font-size="12">brief + constraints</text>
+    <text x="24" y="168" fill="#66625C" font-family="Inter,Arial,sans-serif" font-size="12">locked intent</text>
+    <text x="24" y="193" fill="#66625C" font-family="Inter,Arial,sans-serif" font-size="12">soft priorities</text>
+    <rect x="24" y="220" width="202" height="28" fill="#F3EEE6" stroke="#A06F3B" stroke-opacity="0.35"/>
+    <text x="42" y="238" fill="#7A522E" font-family="JetBrains Mono,monospace" font-size="9">ARCHITECT REMAINS AUTHOR</text>
+  </g>
+
+  <path d="M356 317H446" stroke="#8D8880" stroke-width="1.5"/>
+  <path d="M438 310L446 317L438 324" stroke="#8D8880" stroke-width="1.5"/>
+
+  <g transform="translate(466 152)">
+    <rect width="360" height="332" fill="#222"/>
+    <text x="28" y="42" fill="#BFBAB1" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.8">CANONICAL SEMANTIC MODEL</text>
+    <text x="28" y="84" fill="#F8F6F1" font-family="Georgia,serif" font-size="28">Building</text>
+    <g font-family="Inter,Arial,sans-serif" font-size="12" fill="#E5E1DA">
+      <text x="28" y="125">Wall → position · thickness · hosts · constraints</text>
+      <text x="28" y="157">Room → boundary · area · neighbors · requirements</text>
+      <text x="28" y="189">Door → host wall · connected spaces · width</text>
+      <text x="28" y="221">Window → host wall · orientation · opening</text>
+      <text x="28" y="253">Relations → adjacency · reachability · separation</text>
+    </g>
+    <rect x="28" y="278" width="304" height="30" fill="#2D2D2D" stroke="#F3EEE6" stroke-opacity="0.2"/>
+    <text x="48" y="298" fill="#D7D1C8" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1.1">ONE MODEL · MANY DEPENDENT VIEWS</text>
+  </g>
+
+  <path d="M844 232H924" stroke="#8D8880" stroke-width="1.5"/>
+  <path d="M916 225L924 232L916 239" stroke="#8D8880" stroke-width="1.5"/>
+  <path d="M844 402H924" stroke="#8D8880" stroke-width="1.5"/>
+  <path d="M916 395L924 402L916 409" stroke="#8D8880" stroke-width="1.5"/>
+
+  <g transform="translate(944 152)">
+    <rect width="200" height="150" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.16"/>
+    <text x="22" y="35" fill="#807C75" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.6">VIEW A</text>
+    <text x="22" y="78" fill="#292929" font-family="Georgia,serif" font-size="24">2D plan</text>
+    <text x="22" y="110" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">editable drawing</text>
+    <text x="22" y="130" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">derived from model</text>
+  </g>
+
+  <g transform="translate(944 334)">
+    <rect width="200" height="150" fill="#EDEAE4" stroke="#2C2C2C" stroke-opacity="0.16"/>
+    <text x="22" y="35" fill="#807C75" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.6">VIEW B</text>
+    <text x="22" y="78" fill="#292929" font-family="Georgia,serif" font-size="24">3D model</text>
+    <text x="22" y="110" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">semantic extrusion</text>
+    <text x="22" y="130" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">derived from model</text>
+  </g>
+
+  <g transform="translate(1182 152)">
+    <rect width="170" height="332" fill="#F8F7F4" stroke="#2C2C2C" stroke-opacity="0.16"/>
+    <text x="22" y="37" fill="#807C75" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1.5">ACT ON MODEL</text>
+    <text x="22" y="80" fill="#292929" font-family="Georgia,serif" font-size="21">Constraints</text>
+    <text x="22" y="111" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">areas</text>
+    <text x="22" y="132" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">adjacency</text>
+    <text x="22" y="153" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">locked objects</text>
+    <line x1="22" y1="181" x2="148" y2="181" stroke="#2C2C2C" stroke-opacity="0.12"/>
+    <text x="22" y="221" fill="#292929" font-family="Georgia,serif" font-size="21">Variants</text>
+    <text x="22" y="252" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">preserve intent</text>
+    <text x="22" y="273" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">show trade-offs</text>
+    <text x="22" y="294" fill="#6A665F" font-family="Inter,Arial,sans-serif" font-size="11">explain changes</text>
+  </g>
+
+  <path d="M1170 318H1145" stroke="#A06F3B" stroke-width="1.5"/>
+  <path d="M1153 311L1145 318L1153 325" stroke="#A06F3B" stroke-width="1.5"/>
+  <text x="88" y="548" fill="#85817A" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.8">EDIT ONCE → PROPAGATE SEMANTICALLY → RE-EVALUATE → EXPLAIN</text>
+</svg>
