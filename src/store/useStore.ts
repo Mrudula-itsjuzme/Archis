@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { SemanticModel, Space, VariantType, ChangeEvent, Project } from '../models/types';
 import { initialModel, courtyardHouseProject, apartmentFloorProject, schoolWingProject } from './initialData';
+import type { Recommendation } from './gemini';
 
 interface StoreState {
   model: SemanticModel;
@@ -16,6 +17,13 @@ interface StoreState {
   isExtracting: boolean;
   extractBlueprint: () => Promise<void>;
   setClientViewMode: (enabled: boolean) => void;
+
+  // Recommendations
+  recommendations: Recommendation[];
+  isLoadingRecommendations: boolean;
+  fetchRecommendations: () => Promise<void>;
+  applyRecommendation: (rec: Recommendation) => void;
+
   workspaceMode: 'plan' | '3d' | 'split';
   semanticOverlay: 'none' | 'privacy' | 'circulation' | 'daylight';
   setSemanticOverlay: (overlay: 'none' | 'privacy' | 'circulation' | 'daylight') => void;
@@ -104,6 +112,51 @@ export const useStore = create<StoreState>((set) => ({
   blueprintOffsetY: 100,
   blueprintLocked: false,
   isExtracting: false,
+  recommendations: [],
+  isLoadingRecommendations: false,
+
+  fetchRecommendations: async () => {
+    const { model } = useStore.getState();
+    if (model.rooms.length === 0) return;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+    if (!apiKey) return;
+    set({ isLoadingRecommendations: true });
+    try {
+      const { getRecommendations } = await import('./gemini');
+      const recs = await getRecommendations(model.rooms, apiKey);
+      set({ recommendations: recs, isLoadingRecommendations: false });
+    } catch (err) {
+      console.error('Failed to fetch recommendations:', err);
+      set({ isLoadingRecommendations: false });
+    }
+  },
+
+  applyRecommendation: (rec) => set((state) => {
+    const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
+    for (const change of rec.changes) {
+      for (const b of newModel.project.buildings) {
+        for (const l of b.levels) {
+          const space = l.spaces.find(s => s.id === change.spaceId);
+          if (space) {
+            if (change.type === 'resize') {
+              if (change.newWidth !== undefined) space.width = change.newWidth;
+              if (change.newHeight !== undefined) space.height = change.newHeight;
+            } else if (change.type === 'move') {
+              if (change.newX !== undefined) space.x = change.newX;
+              if (change.newY !== undefined) space.y = change.newY;
+            } else if (change.type === 'rename' && change.newName) {
+              space.name = change.newName;
+            }
+          }
+        }
+      }
+    }
+    const synced = syncLegacyFields(newModel);
+    // Remove applied recommendation from list
+    const remaining = state.recommendations.filter(r => r.id !== rec.id);
+    return { model: synced, recommendations: remaining };
+  }),
+
   extractBlueprint: async () => {
     const { blueprintUrl, model } = useStore.getState();
     if (!blueprintUrl) return;
@@ -134,6 +187,7 @@ export const useStore = create<StoreState>((set) => ({
           
           return {
             isExtracting: false,
+            recommendations: [], // clear old ones
             model: {
               ...newModel,
               activeLevelId: activeLevel.id,
@@ -141,10 +195,13 @@ export const useStore = create<StoreState>((set) => ({
             }
           };
         });
+        // Fetch AI recommendations in the background
+        setTimeout(() => useStore.getState().fetchRecommendations(), 500);
         return;
       } catch (err) {
         console.error("Gemini Extraction failed:", err);
         alert("Real extraction failed. Falling back to simulation. Error: " + (err as Error).message);
+
       }
     }
 
