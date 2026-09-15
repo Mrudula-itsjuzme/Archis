@@ -20,6 +20,38 @@ export default function FloorPlan() {
   const OFFSET_X = 100;
   const OFFSET_Y = 100;
 
+  const setBlueprintConfig = useStore(state => state.setBlueprintConfig);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (locked) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // Store starting positions in data attributes for simple drag tracking without state overhead
+    (e.currentTarget as HTMLImageElement).dataset.dragging = 'true';
+    (e.currentTarget as HTMLImageElement).dataset.startX = e.clientX.toString();
+    (e.currentTarget as HTMLImageElement).dataset.startY = e.clientY.toString();
+    (e.currentTarget as HTMLImageElement).dataset.startOffsetX = bpOffsetX.toString();
+    (e.currentTarget as HTMLImageElement).dataset.startOffsetY = bpOffsetY.toString();
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if ((e.currentTarget as HTMLImageElement).dataset.dragging === 'true') {
+      const startX = parseFloat((e.currentTarget as HTMLImageElement).dataset.startX || '0');
+      const startY = parseFloat((e.currentTarget as HTMLImageElement).dataset.startY || '0');
+      const startOffsetX = parseFloat((e.currentTarget as HTMLImageElement).dataset.startOffsetX || '0');
+      const startOffsetY = parseFloat((e.currentTarget as HTMLImageElement).dataset.startOffsetY || '0');
+      
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      
+      setBlueprintConfig({ offsetX: startOffsetX + dx, offsetY: startOffsetY + dy });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLImageElement).dataset.dragging = 'false';
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   return (
     <div className="w-full h-full relative overflow-hidden" ref={containerRef}>
       {/* Optional Blueprint Background */}
@@ -27,7 +59,12 @@ export default function FloorPlan() {
         <img 
           src={blueprintUrl} 
           alt="Blueprint" 
-          className={`absolute ${locked ? 'pointer-events-none' : ''} cursor-move`}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className={`absolute ${locked ? 'pointer-events-none opacity-50' : 'cursor-move hover:opacity-100'} select-none shadow-sm`}
+          draggable={false}
           style={{
             left: OFFSET_X + bpOffsetX,
             top: OFFSET_Y + bpOffsetY,

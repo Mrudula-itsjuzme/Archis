@@ -11,56 +11,58 @@ export default function MainWorkspace() {
   const setWorkspaceMode = useStore(state => state.setWorkspaceMode);
 
   return (
-    <div className="flex-1 flex flex-col h-full relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Top Bar */}
-      <div className="h-14 border-b border-gray-100 flex items-center justify-center px-6 relative shrink-0">
-        <div className="absolute left-6 flex items-center gap-4">
+      <div className="h-14 border-b border-gray-100 flex items-center justify-between px-6 shrink-0 bg-white z-10">
+        
+        {/* Left: Actions */}
+        <div className="flex items-center gap-2">
           <button 
             onClick={resetModel}
-            className="text-xs font-medium px-3 py-1.5 rounded hover:bg-gray-50 text-gray-600 transition-colors"
+            className="text-xs font-medium px-3 py-1.5 rounded-md hover:bg-gray-100 text-gray-600 transition-colors"
           >
             Reset Demo
           </button>
         </div>
         
-        {/* Workspace Mode Controls */}
-        <div className="flex bg-gray-100 p-1 rounded-lg">
+        {/* Center: Workspace Mode */}
+        <div className="flex bg-gray-100/80 p-1 rounded-lg border border-gray-200/50">
           <button 
             onClick={() => setWorkspaceMode('plan')}
-            className={`px-6 py-1.5 text-xs font-medium rounded-md transition-all ${workspaceMode === 'plan' ? 'bg-white shadow-sm font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-5 py-1 text-xs font-medium rounded-md transition-all ${workspaceMode === 'plan' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Plan
           </button>
           <button 
             onClick={() => setWorkspaceMode('3d')}
-            className={`px-6 py-1.5 text-xs font-medium rounded-md transition-all ${workspaceMode === '3d' ? 'bg-white shadow-sm font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-5 py-1 text-xs font-medium rounded-md transition-all ${workspaceMode === '3d' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
           >
             3D
           </button>
           <button 
             onClick={() => setWorkspaceMode('split')}
-            className={`px-6 py-1.5 text-xs font-medium rounded-md transition-all ${workspaceMode === 'split' ? 'bg-white shadow-sm font-semibold' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-5 py-1 text-xs font-medium rounded-md transition-all ${workspaceMode === 'split' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
           >
             Split
           </button>
         </div>
 
-        <div className="absolute right-6 flex items-center gap-4">
-          <div className="flex bg-gray-100 p-1 rounded-lg">
-            <select 
-              value={useStore(state => state.semanticOverlay)}
-              onChange={(e) => useStore.getState().setSemanticOverlay(e.target.value as any)}
-              className="px-3 py-1 text-xs font-medium bg-transparent border-none outline-none text-gray-600 cursor-pointer"
-            >
-              <option value="none">Space (Default)</option>
-              <option value="privacy">Privacy Zones</option>
-              <option value="circulation">Circulation</option>
-              <option value="daylight">Daylight</option>
-            </select>
-          </div>
-          <div className="flex bg-gray-100 p-1 rounded-lg cursor-pointer" onClick={() => setClientViewMode(!clientViewMode)}>
-            <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${!clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Design View</div>
-            <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Client View</div>
+        {/* Right: Overlays & Views */}
+        <div className="flex items-center gap-3">
+          <select 
+            value={useStore(state => state.semanticOverlay)}
+            onChange={(e) => useStore.getState().setSemanticOverlay(e.target.value as any)}
+            className="px-3 py-1.5 text-xs font-medium bg-gray-50 border border-gray-200 rounded-lg text-gray-700 outline-none cursor-pointer hover:bg-gray-100 transition-colors"
+          >
+            <option value="none">Space (Default)</option>
+            <option value="privacy">Privacy Zones</option>
+            <option value="circulation">Circulation</option>
+            <option value="daylight">Daylight</option>
+          </select>
+
+          <div className="flex bg-gray-100/80 p-1 rounded-lg border border-gray-200/50 cursor-pointer" onClick={() => setClientViewMode(!clientViewMode)}>
+            <div className={`px-4 py-1 text-xs font-medium rounded-md transition-all ${!clientViewMode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Design View</div>
+            <div className={`px-4 py-1 text-xs font-medium rounded-md transition-all ${clientViewMode ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>Client View</div>
           </div>
         </div>
       </div>

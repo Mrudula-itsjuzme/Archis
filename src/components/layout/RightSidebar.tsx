@@ -20,28 +20,30 @@ export default function RightSidebar() {
   return (
     <div className="w-80 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
       {/* Tabs */}
-      <div className="flex border-b border-gray-100 shrink-0">
-        <button 
-          onClick={() => setActiveTab('insights')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === 'insights' ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          Insights
-        </button>
-        <button 
-          onClick={() => setActiveTab('variants')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === 'variants' ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          Variants
-        </button>
-        <button 
-          onClick={() => setActiveTab('history')}
-          className={`flex-1 py-3 text-xs font-medium border-b-2 transition-colors ${activeTab === 'history' ? 'border-[#3b5998] text-[#3b5998]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-        >
-          History
-        </button>
+      <div className="flex p-2 shrink-0">
+        <div className="flex w-full bg-gray-100/80 p-1 rounded-lg border border-gray-200/50">
+          <button 
+            onClick={() => setActiveTab('insights')}
+            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'insights' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Insights
+          </button>
+          <button 
+            onClick={() => setActiveTab('variants')}
+            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'variants' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            Variants
+          </button>
+          <button 
+            onClick={() => setActiveTab('history')}
+            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'history' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            History
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 gap-6 flex flex-col">
+      <div className="flex-1 overflow-y-auto p-4 gap-6 flex flex-col">
         {activeTab === 'insights' && (
           <ConstraintStatus />
         )}
