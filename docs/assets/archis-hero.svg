@@ -1,0 +1,80 @@
+<svg width="1440" height="720" viewBox="0 0 1440 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1440" height="720" fill="#F4F3F0"/>
+  <defs>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#2C2C2C" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="fade" x1="760" y1="70" x2="1370" y2="650" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FDFDFC"/>
+      <stop offset="1" stop-color="#E9E6E0"/>
+    </linearGradient>
+  </defs>
+  <rect x="56" y="52" width="1328" height="616" rx="2" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.16"/>
+  <rect x="56" y="52" width="1328" height="616" fill="url(#grid)" opacity="0.95"/>
+
+  <g transform="translate(104 106)">
+    <text x="0" y="25" fill="#2C2C2C" font-family="Inter,Arial,sans-serif" font-size="14" letter-spacing="3.5">ARCHIS / SEMANTIC ARCHITECTURE</text>
+    <text x="0" y="112" fill="#202020" font-family="Georgia,serif" font-size="58" font-weight="400">One building.</text>
+    <text x="0" y="177" fill="#202020" font-family="Georgia,serif" font-size="58" font-weight="400">Two views.</text>
+    <text x="0" y="242" fill="#202020" font-family="Georgia,serif" font-size="58" font-weight="400">No broken context.</text>
+    <text x="0" y="300" fill="#5F5D59" font-family="Inter,Arial,sans-serif" font-size="18">A semantic design workspace where 2D plans and 3D models</text>
+    <text x="0" y="329" fill="#5F5D59" font-family="Inter,Arial,sans-serif" font-size="18">read from the same building model.</text>
+
+    <g transform="translate(0 392)">
+      <rect width="172" height="44" fill="#202020"/>
+      <text x="22" y="28" fill="#FDFDFC" font-family="JetBrains Mono,monospace" font-size="12" letter-spacing="1.4">ARCHITECT FIRST</text>
+      <rect x="190" width="164" height="44" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.2"/>
+      <text x="213" y="28" fill="#2C2C2C" font-family="JetBrains Mono,monospace" font-size="12" letter-spacing="1.4">MODEL FIRST</text>
+    </g>
+  </g>
+
+  <g transform="translate(760 94)">
+    <rect width="566" height="532" fill="url(#fade)" stroke="#2C2C2C" stroke-opacity="0.18"/>
+    <rect x="0" y="0" width="566" height="48" fill="#F7F6F3" stroke="#2C2C2C" stroke-opacity="0.12"/>
+    <circle cx="24" cy="24" r="4" fill="#2C2C2C" fill-opacity="0.25"/>
+    <circle cx="40" cy="24" r="4" fill="#2C2C2C" fill-opacity="0.14"/>
+    <circle cx="56" cy="24" r="4" fill="#2C2C2C" fill-opacity="0.08"/>
+    <text x="84" y="29" fill="#55524D" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.5">RESIDENCE_01 / LIVE MODEL</text>
+
+    <g transform="translate(24 78)">
+      <text x="0" y="0" fill="#65625D" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.6">2D PLAN</text>
+      <rect x="0" y="18" width="246" height="258" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.16"/>
+      <path d="M24 47H220V237H24V47ZM24 126H220M120 47V237M120 183H220" stroke="#272727" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M120 117H120" stroke="#272727" stroke-width="16" stroke-linecap="round"/>
+      <path d="M24 183H78" stroke="#272727" stroke-width="5"/>
+      <path d="M74 183A32 32 0 0 1 106 215" stroke="#A06F3B" stroke-width="2" fill="none"/>
+      <text x="47" y="91" fill="#73706A" font-family="Inter,Arial,sans-serif" font-size="10">LIVING</text>
+      <text x="145" y="91" fill="#73706A" font-family="Inter,Arial,sans-serif" font-size="10">KITCHEN</text>
+      <text x="43" y="163" fill="#73706A" font-family="Inter,Arial,sans-serif" font-size="10">BED 01</text>
+      <text x="145" y="163" fill="#73706A" font-family="Inter,Arial,sans-serif" font-size="10">BED 02</text>
+      <text x="145" y="217" fill="#73706A" font-family="Inter,Arial,sans-serif" font-size="10">COURT</text>
+    </g>
+
+    <g transform="translate(296 78)">
+      <text x="0" y="0" fill="#65625D" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.6">3D VIEW</text>
+      <rect x="0" y="18" width="246" height="258" fill="#EF EDEA"/>
+      <rect x="0" y="18" width="246" height="258" fill="#EDEAE4" stroke="#2C2C2C" stroke-opacity="0.16"/>
+      <path d="M36 198L107 236L209 180L138 142L36 198Z" fill="#D9D5CD" stroke="#55514B" stroke-width="1.4"/>
+      <path d="M36 198V110L107 148V236M107 148L209 92V180M36 110L107 148L209 92L138 54L36 110Z" fill="#F7F5F1" fill-opacity="0.55" stroke="#55514B" stroke-width="1.4"/>
+      <path d="M107 148V87M138 54V142M72 129V217M173 111V199" stroke="#8F8A82" stroke-width="1.1"/>
+      <path d="M36 110L138 54M107 148L209 92" stroke="#8F8A82" stroke-dasharray="4 4"/>
+      <circle cx="172" cy="85" r="5" fill="#A06F3B"/>
+      <path d="M172 85L205 52" stroke="#A06F3B" stroke-width="1.4"/>
+      <rect x="172" y="34" width="65" height="22" fill="#FDFDFC" stroke="#A06F3B" stroke-width="1"/>
+      <text x="181" y="48" fill="#7C542F" font-family="JetBrains Mono,monospace" font-size="8">WALL_12</text>
+    </g>
+
+    <g transform="translate(24 384)">
+      <text x="0" y="0" fill="#65625D" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="1.6">CHANGE PROPAGATION</text>
+      <rect x="0" y="20" width="518" height="96" fill="#FDFDFC" stroke="#2C2C2C" stroke-opacity="0.14"/>
+      <circle cx="31" cy="52" r="7" fill="#A06F3B"/>
+      <text x="50" y="57" fill="#2C2C2C" font-family="Inter,Arial,sans-serif" font-size="13">Wall moved 0.8 m inward</text>
+      <text x="50" y="79" fill="#77736D" font-family="Inter,Arial,sans-serif" font-size="11">2 room areas updated · adjacency preserved · 3D regenerated</text>
+      <text x="50" y="99" fill="#77736D" font-family="Inter,Arial,sans-serif" font-size="11">Hard constraints: 6 / 6 valid</text>
+      <rect x="405" y="44" width="89" height="28" fill="#E7ECE4" stroke="#64705F" stroke-opacity="0.35"/>
+      <text x="426" y="62" fill="#4E5A49" font-family="JetBrains Mono,monospace" font-size="9" letter-spacing="1">VALID</text>
+    </g>
+  </g>
+
+  <text x="104" y="632" fill="#85817A" font-family="JetBrains Mono,monospace" font-size="10" letter-spacing="2">CONCEPT + ACTIVE PROTOTYPE / 2026</text>
+</svg>
