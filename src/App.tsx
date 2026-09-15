@@ -5,22 +5,10 @@ import RightSidebar from './components/layout/RightSidebar';
 
 function App() {
   return (
-    <div className="relative w-screen h-screen bg-[#efedea] overflow-hidden text-[#2c2c2c] font-sans">
+    <div className="flex h-screen w-screen bg-[#f5f4f1] overflow-hidden text-[#2c2c2c] p-4 gap-4 font-sans">
+      <Sidebar />
       <MainWorkspace />
-      
-      {/* Floating Left Sidebar */}
-      <div className="absolute top-4 left-4 bottom-4 z-20 pointer-events-none">
-        <div className="pointer-events-auto h-full">
-          <Sidebar />
-        </div>
-      </div>
-
-      {/* Floating Right Sidebar */}
-      <div className="absolute top-4 right-4 bottom-4 z-20 pointer-events-none">
-        <div className="pointer-events-auto h-full">
-          <RightSidebar />
-        </div>
-      </div>
+      <RightSidebar />
     </div>
   );
 }

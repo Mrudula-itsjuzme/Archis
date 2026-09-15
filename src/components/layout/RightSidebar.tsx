@@ -11,14 +11,14 @@ export default function RightSidebar() {
 
   if (clientViewMode) {
     return (
-      <div className="w-96 h-full bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/60 overflow-y-auto flex flex-col p-5 gap-6 relative z-50 pointer-events-auto">
+      <div className="w-96 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-y-auto flex flex-col p-5 gap-6 relative z-50">
         <ClientView />
       </div>
     );
   }
 
   return (
-    <div className="w-80 h-full bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/60 overflow-hidden flex flex-col pointer-events-auto">
+    <div className="w-80 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
       {/* Tabs */}
       <div className="flex p-2 shrink-0">
         <div className="flex w-full bg-gray-100/80 p-1 rounded-lg border border-gray-200/50">
