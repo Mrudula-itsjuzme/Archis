@@ -124,7 +124,7 @@ export default function MainWorkspace() {
               </div>
             </div>
             <div className="flex-1 relative overflow-hidden bg-[#f8f9fb]" style={{ backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-              <FloorPlan />
+              <FloorPlan view={plan2dTab} />
               {/* North arrow + scale bar */}
               <div className="absolute bottom-4 left-4 flex items-end gap-3 pointer-events-none">
                 <div className="flex flex-col items-center text-[10px] text-gray-500">
