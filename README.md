@@ -1,65 +1,224 @@
 <p align="center">
-  <img src="docs/assets/archis-hero.svg" alt="Archis — semantic architecture workspace" width="100%" />
+  <img src="docs/assets/archis-hero.svg" alt="Archis — intent-aware architecture workspace" width="100%" />
 </p>
 
 # Archis
 
-> **A semantic architecture workspace that starts from the architect’s first idea, not from a blank AI prompt.**
+> **The architect authors the design. Archis helps the design survive change.**
 
-Archis explores one question:
+Archis is an early architecture-software research prototype built around a narrower question than “can AI generate a floor plan?”
 
-**What if a building existed as one connected semantic object, and the floor plan, 3D model, constraints, and design alternatives were simply different ways of working with that same thing?**
-
-The architect still makes the first move. Archis is meant to understand enough of the building around that move to keep the rest of the design coherent.
+**Can software begin from an architect-authored draft, infer which relationships appear intentional, ask when it is uncertain, and help make later changes while preserving what mattered in the original design?**
 
 <p>
   <img alt="Stage" src="https://img.shields.io/badge/stage-active%20prototype-2c2c2c?style=flat-square" />
+  <img alt="Focus" src="https://img.shields.io/badge/focus-intent--preserving%20iteration-2c2c2c?style=flat-square" />
   <img alt="React" src="https://img.shields.io/badge/React-18-2c2c2c?style=flat-square&logo=react&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-2c2c2c?style=flat-square&logo=typescript&logoColor=white" />
   <img alt="Three.js" src="https://img.shields.io/badge/Three.js-semantic%203D-2c2c2c?style=flat-square&logo=threedotjs&logoColor=white" />
-  <img alt="Vite" src="https://img.shields.io/badge/Vite-5-2c2c2c?style=flat-square&logo=vite&logoColor=white" />
 </p>
 
 ---
 
-## The 20-second version
+## The short version
 
-Traditional architecture workflows often make the same building exist in several representations at once: drawings, models, schedules, notes, constraints, exports, revisions.
-
-Archis tries to move the source of truth underneath those representations.
+A building changes constantly after its first draft. A room grows. A client changes a requirement. A wall moves. A code or site constraint appears. The difficult question is not only whether the new geometry is valid. It is whether the change quietly destroyed the idea the architect was trying to preserve.
 
 ```text
-Architect's first draft
-        +
-site + requirements + constraints + intent
-        ↓
-CANONICAL SEMANTIC BUILDING MODEL
-        ↓
-┌──────────────┬──────────────┬──────────────┐
-│   2D plan    │   3D view    │ constraints  │
-└──────────────┴──────────────┴──────────────┘
-        ↓
-change propagation + nearby alternatives + explanations
-        ↓
-architect accepts, edits, rejects, or refines
+ARCHITECT'S FIRST DRAFT
+          ↓
+semantic building representation
+          ↓
+intent hypotheses + explicit constraints
+          ↓
+"Is this what you meant?"
+          ↓
+architect confirms / corrects
+          ↓
+change request
+          ↓
+minimal-change alternatives
+          ↓
+impact explanation
+          ↓
+architect accepts / edits / rejects
 ```
 
-**2D and 3D do not synchronize directly with each other. They both read from the same model.**
+Archis treats the first draft as **evidence of intent**, not merely geometry to redraw.
 
-That is the core architectural decision behind the project.
+---
+
+## What is actually new here?
+
+Not 2D ↔ 3D synchronization. Not semantic walls. Not BIM. Not “AI for architects.” Mature BIM and newer design systems already cover substantial parts of those problems.
+
+The hypothesis Archis is testing is more specific:
+
+> **Given an existing architect-authored design and a new requirement, can a system identify likely design invariants and produce the smallest useful change that satisfies the new requirement without unnecessarily destroying those invariants?**
+
+That turns the problem from **generation** into **intent-preserving transformation**.
+
+### Example
+
+An architect's plan may explicitly say:
+
+```text
+Bedroom >= 12 m²
+Kitchen adjacent to dining
+Structural wall locked
+```
+
+But the drawing may also suggest things nobody typed into a constraint panel:
+
+```text
+courtyard anchors the social spaces
+private rooms are screened from the entrance
+entry compresses before opening into living
+exact bathroom geometry is comparatively flexible
+```
+
+Archis should not pretend it knows those things with certainty. It should form hypotheses:
+
+```text
+INFERRED INTENT
+
+high confidence    kitchen ↔ dining adjacency appears deliberate
+high confidence    bedrooms form a privacy zone
+medium confidence  courtyard appears to anchor social spaces
+low confidence     bathroom position appears significant
+
+                   [protect] [ignore] [edit]
+```
+
+The architect remains the authority.
+
+---
+
+## Why this is not “just BIM”
+
+BIM already gives buildings semantic objects and coordinated representations. Archis depends on that idea rather than claiming to invent it.
+
+The research problem sits one level above representation:
+
+```text
+What exists?        → semantic model
+What is legal?      → hard constraints
+What is preferred?  → soft priorities
+What did THIS
+architect mean?     → intent hypotheses
+What will this
+change disturb?     → semantic impact analysis
+What is the least
+destructive edit?   → minimal-change search
+```
+
+The goal is not another universal BIM platform. The initial wedge is the messy **iteration loop around an existing early design**.
+
+---
+
+## Why now, when the market is already crowded?
+
+The market is moving quickly, which is exactly why Archis cannot rely on broad claims.
+
+- Revit and Archicad already provide model-centric BIM and coordinated views.
+- Autodesk Forma is pushing further into early schematic exploration and generative layout workflows.
+- Snaptrude now combines an editable connected model with AI-assisted programming, site analysis, generation and BIM workflows.
+- Finch encodes firm design systems, plan libraries, rules and constraints to generate and adapt layouts.
+- Research systems such as HouseMind already unify floor-plan understanding, generation and editing.
+
+So **connected models, controllable generation and architect-in-the-loop AI are becoming table stakes.**
+
+The remaining question Archis cares about is not “can the machine make more options?” It is:
+
+> **Can it understand enough about the option the architect already chose to know what should survive the next edit?**
+
+That is still a hypothesis, not a solved claim.
+
+See [`docs/RESEARCH_THESIS.md`](docs/RESEARCH_THESIS.md) for the competitive and research framing.
+
+---
+
+## The research model
+
+Archis currently separates five kinds of information:
+
+```text
+BUILDING MODEL
+├── geometry
+├── topology
+├── semantic entities
+├── explicit constraints
+└── design priorities
+```
+
+The proposed research layer adds:
+
+```text
+INTENT MODEL
+├── inferred invariant
+├── strength / priority
+├── confidence
+├── evidence
+└── architect confirmation
+```
+
+An edit can then be evaluated as more than valid/invalid.
+
+A future design-distance objective could look like:
+
+```text
+D' = best candidate satisfying the new requirement
+
+while minimizing:
+
+geometry change
++ topology change
++ intent loss
++ unwanted experiential change
+```
+
+The exact representation and weighting are **open research questions**, not implemented facts.
+
+---
+
+## Semantic impact analysis
+
+Suppose the architect asks:
+
+> Increase the kitchen by 15%.
+
+The interesting output is not only the moved wall.
+
+```text
+Kitchen expands
+     ↓
+Dining shrinks
+     ↓
+Circulation narrows
+     ↓
+Door position changes
+     ↓
+Entrance sightline changes
+     ↓
+Original spatial hierarchy may weaken
+```
+
+Archis should eventually be able to say something closer to:
+
+> This change is geometrically feasible, but it weakens two relationships you previously marked important. Here are three smaller alternatives.
+
+That is the product interaction the project is moving toward.
 
 ---
 
 ## What exists today
 
-Archis now has a small working MVP focused on proving the semantic interaction rather than pretending to be a full BIM platform.
-
-### Current prototype
+Archis currently has a deliberately small semantic-interaction MVP:
 
 - interactive 2D room-plan workspace
 - linked 3D semantic extrusion
-- shared semantic model stored independently of either view
-- live hard-constraint evaluation
+- shared semantic model independent of either view
+- live deterministic hard-constraint evaluation
 - bedroom minimum-area checks
 - kitchen ↔ living adjacency check
 - substantial-overlap detection
@@ -67,198 +226,81 @@ Archis now has a small working MVP focused on proving the semantic interaction r
 - semantic explanation / status UI
 - Zustand-backed shared state
 
-### Deterministic variants currently implemented
+### Current deterministic variants
 
-- **Preserve** — snaps the base design while preserving the layout structure
-- **More Private** — pushes bedrooms / bathroom away from the more public zone and extends circulation
-- **More Compact** — reduces selected room and circulation dimensions while keeping bedroom minima above their hard thresholds
+- **Preserve** — normalizes the base design while preserving its broad layout structure
+- **More Private** — shifts private spaces away from the public zone
+- **More Compact** — reduces selected dimensions while protecting current hard thresholds
 
-The point is deliberately **not** “AI magically generates architecture.”
+These variants **do not yet infer latent architectural intent**. They are scaffolding for testing the interaction model.
 
-The current prototype first proves that geometry, relationships, constraints, and views can stay attached to one canonical building representation.
+That distinction matters.
 
 ---
 
 ## Product workspace concept
 
 <p align="center">
-  <img src="docs/assets/workspace-concept.svg" alt="Archis product workspace concept showing model tree, 2D plan, 3D view and semantic explanation" width="100%" />
+  <img src="docs/assets/workspace-concept.svg" alt="Archis product workspace concept" width="100%" />
 </p>
 
-The interface direction follows the same rule as the engine: make the building feel like one object being inspected from several angles, not several files awkwardly trying to agree.
+The interface should make the building feel like one object being inspected from several angles. The long-term UI should make uncertainty visible rather than hiding it behind an AI answer.
 
-The workspace is intentionally quiet: drafting-grid surfaces, architectural neutrals, semantic highlights, and explanations that sit beside the design instead of drowning it in dashboard chrome.
+A useful future panel is not simply “AI suggestions.” It is **What I think you are protecting**, with confidence and architect correction.
 
-> The visual above is a **product-direction mockup**, not a claim that every shown control is implemented exactly as pictured.
-
----
-
-## Why Archis exists
-
-Architectural design is not just “generate a floor plan from a prompt.”
-
-An architect begins with much more than a room list:
-
-- site dimensions, orientation and access
-- setbacks and regulations
-- client requirements
-- room relationships and circulation
-- privacy, daylight and ventilation priorities
-- budget and material constraints
-- elements that should not move
-- and, most importantly, **design intent**
-
-The first sketch already contains part of that intent.
-
-Archis starts there.
-
-Instead of asking AI to replace the architect, the system is designed around the architect producing the first concept and then working with software that can understand, test, compare, and explore **nearby** variations without forgetting what the design was trying to be.
-
----
-
-## The semantic core
-
-A normal drawing primitive might be:
-
-```text
-line from (x1, y1) to (x2, y2)
-```
-
-Archis wants to work closer to:
-
-```text
-Wall
-├── identity
-├── position
-├── thickness
-├── height
-├── material
-├── adjacent spaces
-├── hosted openings
-└── constraints
-```
-
-A room similarly becomes more than a polygon:
-
-```text
-Room
-├── name / type
-├── boundary
-├── area
-├── neighboring spaces
-├── openings
-├── minimum requirements
-├── privacy / access rules
-└── design priorities
-```
-
-<p align="center">
-  <img src="docs/assets/semantic-loop.svg" alt="Archis semantic building model diagram" width="100%" />
-</p>
-
-This canonical model is the thing Archis edits.
-
-The 2D plan and 3D representation are dependent views of that model, not competing sources of truth.
-
----
-
-## What happens when something changes?
-
-Suppose an architect moves a wall.
-
-Archis should not merely move pixels.
-
-```text
-Move wall
-   ↓
-room boundaries change
-   ↓
-areas change
-   ↓
-adjacencies may change
-   ↓
-hosted openings may be affected
-   ↓
-constraints re-evaluate
-   ↓
-2D + 3D views update from the model
-   ↓
-trade-offs are surfaced
-```
-
-That idea, **semantic change propagation**, is the part of Archis that matters most.
-
-A design tool becomes much more useful when it understands that one edit has consequences elsewhere and can tell the architect what those consequences are.
+> The visual above is a product-direction mockup. It is not a claim that every shown control is implemented.
 
 ---
 
 ## Architect first, AI second
 
-Archis is not intended to become:
+Archis is deliberately **not**:
 
-> “Describe a house and AI designs everything for you.”
+> “Give me a site and brief and I will design the building for you.”
 
-That flattens one of the most interesting parts of architecture: judgment.
+The architect makes the first move because the first draft contains judgment that may never become a clean numeric constraint.
 
-The intended interaction is closer to:
+The intended loop is:
 
-1. the architect creates the first concept,
-2. Archis represents the design as structured building objects,
-3. explicit constraints and priorities attach to that model,
-4. the system explores nearby alternatives,
-5. trade-offs are exposed,
-6. the architect decides what is worth keeping.
+1. architect creates or imports a first concept,
+2. Archis reconstructs its semantic structure,
+3. explicit constraints are attached,
+4. the system proposes hypotheses about less-explicit intent,
+5. architect confirms or corrects them,
+6. architect requests a change,
+7. Archis searches for nearby alternatives,
+8. consequences and trade-offs are explained,
+9. architect decides.
 
-AI may eventually help interpret intent, explain failures, suggest possible adjustments, or rank alternatives.
-
-But **geometry, constraints, and validity should not depend on an LLM hallucinating a building into existence.**
-
----
-
-## Example design brief
-
-### Hard constraints
-
-```text
-Bedroom 1 area >= 12 m²
-Bedroom 2 area >= 10 m²
-Kitchen remains adjacent to living/dining
-Locked objects remain fixed
-Rooms must not substantially overlap
-```
-
-### Softer intent
-
-```text
-Keep bedrooms more private than social spaces
-Preserve the courtyard as a visual center
-Prefer better daylight in the living room
-Avoid unnecessary circulation
-Do not destroy the original spatial organization
-```
-
-Archis can then explore nearby versions such as:
-
-- **Preserve Original** — resolve or normalize without redesigning the concept
-- **More Private** — increase separation between sleeping and public zones
-- **More Compact** — reduce unnecessary footprint while protecting hard constraints
-
-The useful output is not just another floor plan. It is the explanation around the change:
-
-```text
-Bedroom wing shifted away from the public zone.
-Kitchen-living adjacency preserved.
-Bedroom minima remain valid.
-Circulation increased to preserve reachability.
-```
-
-There is no single mathematically perfect house.
-
-The product should make trade-offs visible enough that the architect can make the actual decision.
+AI can help with interpretation and search. Deterministic geometry and constraint logic should remain verifiable wherever possible.
 
 ---
 
-## Architecture
+## The hard problems
+
+The interesting work begins where the current prototype ends.
+
+### 1. Latent intent inference
+Distinguish deliberate relationships from incidental geometry.
+
+### 2. Intent hierarchy
+Represent **must preserve**, **strong preference**, **weak preference**, and **free to change** rather than flattening everything into binary constraints.
+
+### 3. Uncertainty
+A system should be able to say “I am not sure this mattered” and ask the architect.
+
+### 4. Semantic design distance
+Define what “smallest change” means when two geometrically similar plans may differ greatly in architectural intent.
+
+### 5. Impact propagation
+Explain the architectural consequences of an edit, not merely the objects whose coordinates changed.
+
+### 6. Preference learning
+Use architect corrections to learn project-specific priorities without turning them into an opaque style model.
+
+---
+
+## Architecture today
 
 ```text
 ┌─────────────────────────────────────────┐
@@ -298,141 +340,94 @@ The product should make trade-offs visible enough that the architect can make th
 
 ---
 
-## What Archis is *not* claiming
+## Validation before expansion
 
-Existing BIM and architecture software already supports semantic building objects, coordinated drawings, 2D/3D workflows, and increasingly AI-assisted design.
+The next milestone is not “add more AI.” It is finding out whether the problem is real.
 
-So Archis is **not** built on claims like:
+The first tests should use real architect-authored residential plans and real revision requests.
 
-- “nobody has connected 2D and 3D before”
-- “semantic building objects do not exist”
-- “BIM is broken and this replaces all of it”
-- “AI should design buildings instead of architects”
+Measure:
 
-The hypothesis is narrower:
+- which relationships architects mark as intentional,
+- whether Archis can predict those relationships before confirmation,
+- calibration: when Archis is uncertain, is it actually less likely to be right?
+- how often generated edits preserve architect-confirmed invariants,
+- time to complete common revisions with and without assistance,
+- how many suggestions are accepted, edited, or rejected,
+- whether architects return voluntarily for another revision task.
 
-> **Can software begin from an architect’s own first concept, preserve enough of its intent to matter, and help explore better nearby versions without flattening the design into generic optimization?**
-
-That is what the prototype is meant to test.
-
----
-
-## Why the architect still matters
-
-Archis can know whether a bedroom dropped below 12 m².
-
-It can know that a kitchen and living room are no longer adjacent.
-
-It can know that two spaces overlap.
-
-But architectural judgment includes things much harder to formalize:
-
-- what a space should feel like
-- what deserves emphasis
-- which trade-off is acceptable
-- how a sequence of spaces should unfold
-- which imperfection gives a design character
-- what a particular client means when they describe how they want to live
-
-That is why the architect gives the first draft.
-
-The draft is not merely geometry. It is evidence of intent.
-
-Archis should help the architect **push that idea further**, not erase the reason an architect was there in the first place.
-
----
-
-## Current status
-
-**Stage:** active MVP / semantic interaction prototype
-
-The repository now contains a working front-end prototype rather than only the original concept document.
-
-### What the MVP is trying to prove
-
-1. one semantic model can drive both 2D and 3D representations,
-2. deterministic constraints can react immediately to edits,
-3. alternatives can be generated as transformations of the same design rather than unrelated new layouts,
-4. the system can surface *why* an edit matters,
-5. the architect can remain in control of the design loop.
-
-### What it does **not** prove yet
-
-- architectural quality in real practice
-- robust arbitrary floor-plan parsing
-- structural validity
-- MEP coordination
-- comprehensive code compliance
-- BIM / IFC interoperability
-- production-grade geometry
-- whether architects actually prefer this workflow
-
-Those are later validation problems, not things this prototype should pretend are solved.
+The founder connection to a practicing architect gives access to an initial test user. **It is not market validation.**
 
 ---
 
 ## Roadmap
 
-### Phase 0 — semantic interaction ✅ / in progress
-
-- [x] shared model
+### Phase 0 — semantic interaction prototype ✓ / active
+- [x] shared semantic model
 - [x] editable 2D representation
-- [x] linked 3D view
+- [x] linked 3D representation
 - [x] hard constraints
 - [x] deterministic alternatives
-- [x] semantic explanation UI
-- [ ] tighten edit propagation around more entity types
-- [ ] improve room / wall semantics beyond the current simplified prototype
+- [x] explanation UI
+- [ ] stronger entity semantics and propagation
 
-### Phase 1 — test usefulness with architects
+### Phase 1 — architect-authored plan experiments
+- [ ] collect real first-draft → revision pairs with permission
+- [ ] annotate deliberate vs incidental relationships
+- [ ] build intent-hypothesis UI
+- [ ] measure agreement with architects
+- [ ] test confidence calibration
 
-- real residential briefs
-- workflow observation
-- structured feedback on change explanations
-- test which parts of “design intent” architects actually want preserved
-- measure whether semantic propagation reduces repetitive iteration
+### Phase 2 — minimal-change engine
+- [ ] explicit hard / soft / free-to-change hierarchy
+- [ ] semantic design-distance baseline
+- [ ] local search around an authored plan
+- [ ] semantic impact explanations
+- [ ] compare against naive constraint-only optimization
 
-### Phase 2 — deepen the engine
+### Phase 3 — learn from corrections
+- [ ] project-specific preference model
+- [ ] decision history / rationale
+- [ ] architect corrections as feedback
+- [ ] explainable alternative ranking
 
-- walls, doors and windows as richer first-class entities
-- stronger topology and reachability
-- semantic undo / redo transactions
-- dependency-aware recomputation
-- richer constraints
-- explicit hard vs soft priorities
-
-### Phase 3 — earn the AI layer
-
-- natural-language intent interpretation
-- explainable alternative ranking
-- broader design-search strategies
-- design-history / decision traces
-
-### Phase 4 — interoperability
-
-- BIM / IFC handoff
-- collaboration and versioning
-- professional pilot projects
-- deeper cost / compliance / digital-twin directions only where the core model justifies them
+### Phase 4 — only after the wedge works
+- [ ] richer walls / doors / windows / topology
+- [ ] IFC / BIM handoff
+- [ ] professional pilot workflow
+- [ ] collaboration and versioning where demanded
 
 ---
 
-## Why this project exists
+## What Archis is not claiming
 
-Archis comes from a very ordinary frustration: architecture work becomes fragmented frighteningly quickly.
+- that BIM lacks semantic objects
+- that 2D/3D synchronization is new
+- that generative floor plans are new
+- that “human-in-the-loop AI” is sufficient novelty
+- that the current prototype understands architectural intent
+- that architects want this workflow before it has been validated
+- that Archis should replace Revit, Archicad, Snaptrude, Forma or Finch end-to-end
 
-The interesting technical problem is not “can a browser render a room in 3D?”
-
-It is whether software can understand enough of a building that editing, checking, comparing, and iterating feels like working with **one coherent thing**.
-
-That is what I am testing here.
+Archis is a **testable thesis**, not a victory lap.
 
 ---
 
 ## One sentence
 
-**Archis starts with the architect’s first idea and lets 2D, 3D, constraints, and alternatives evolve around one shared semantic building model instead of repeatedly rebuilding the same design across disconnected representations.**
+**Archis starts from an architect-authored design, learns what appears important enough to protect, and aims to make later changes with the smallest possible loss of the original intent.**
 
 ---
 
-<sub>Archis is an active prototype. The visuals in this README include product-direction mockups alongside implemented concepts; future sections describe direction, not completed professional BIM functionality.</sub>
+## Reading / market context
+
+The thesis is intentionally framed against what exists today rather than pretending the field is empty:
+
+- [Snaptrude AI: AI that designs with you](https://www.snaptrude.com/blog/announcing-snaptrude-ai)
+- [Finch: design systems, constraints and plan libraries](https://www.finch3d.com/product)
+- [Autodesk Forma Building Layout Explorer](https://adsknews.autodesk.com/en/news/building-layout-explorer-in-autodesk-forma/)
+- [HouseMind, CVPR 2026: understanding, generating and editing floor plans](https://openaccess.thecvf.com/content/CVPR2026/html/Qin_Tokenization_Allows_Multimodal_Large_Language_Models_to_Understand_Generate_and_CVPR_2026_paper.html)
+
+A deeper framing and falsifiable research plan lives in [`docs/RESEARCH_THESIS.md`](docs/RESEARCH_THESIS.md).
+
+<sub>Archis is an active prototype. Current implementation, research hypotheses, and future product direction are deliberately separated throughout this README.</sub>
