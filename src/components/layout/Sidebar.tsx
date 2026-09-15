@@ -17,13 +17,15 @@ export default function Sidebar() {
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      useStore.getState().setBlueprintConfig({ url });
-      
-      // Automatically trigger the AI extraction process upon upload
-      if (!useStore.getState().isExtracting) {
-        await useStore.getState().extractBlueprint();
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const url = e.target?.result as string;
+        setBlueprintConfig({ url });
+        setTimeout(() => {
+          useStore.getState().extractBlueprint();
+        }, 500);
+      };
+      reader.readAsDataURL(file);
     }
   };
 

@@ -105,12 +105,52 @@ export const useStore = create<StoreState>((set) => ({
   blueprintLocked: false,
   isExtracting: false,
   extractBlueprint: async () => {
+    const { blueprintUrl, model } = useStore.getState();
+    if (!blueprintUrl) return;
+
     set({ isExtracting: true });
+    
+    // Check if it's a data URL (needed for Gemini)
+    const isDataUrl = blueprintUrl.startsWith('data:');
+    
+    let apiKey = localStorage.getItem('GEMINI_API_KEY') || '';
+    if (isDataUrl) {
+       const userKey = window.prompt("Enter Gemini API Key for REAL AI extraction (or leave blank to use simulated demo):", apiKey);
+       if (userKey !== null) {
+          apiKey = userKey.trim();
+          if (apiKey) localStorage.setItem('GEMINI_API_KEY', apiKey);
+       }
+    }
+
+    if (apiKey && isDataUrl) {
+      try {
+        const { extractRoomsWithGemini } = await import('./gemini');
+        const extractedRooms = await extractRoomsWithGemini(blueprintUrl, apiKey);
+        
+        set(state => {
+          const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
+          const activeLevel = newModel.project.buildings[0].levels[0]; // Simplification for demo
+          activeLevel.spaces = extractedRooms;
+          
+          return {
+            isExtracting: false,
+            model: {
+              ...newModel,
+              activeLevelId: activeLevel.id,
+              rooms: activeLevel.spaces
+            }
+          };
+        });
+        return;
+      } catch (err) {
+        console.error("Gemini Extraction failed:", err);
+        alert("Real extraction failed. Falling back to simulation. Error: " + (err as Error).message);
+      }
+    }
+
+    // Fallback Mock
     await new Promise(r => setTimeout(r, 2000));
     set(state => {
-      // In a real app, this would send the image to a vision model (like Gemini)
-      // Here, we load the school project layout to simulate successful extraction for the demo.
-      
       return { 
         isExtracting: false,
         model: {
