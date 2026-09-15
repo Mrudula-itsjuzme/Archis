@@ -131,7 +131,7 @@ export default function Scene3D() {
           {isFirstPerson ? (
             <PointerLockControls />
           ) : (
-            <OrbitControls makeDefault target={[0, 0, 0]} maxPolarAngle={Math.PI / 2 - 0.05} minPolarAngle={0.1} />
+            <OrbitControls makeDefault enabled={!useStore(state => state.isDragging3D)}  target={[0, 0, 0]} maxPolarAngle={Math.PI / 2 - 0.05} minPolarAngle={0.1} />
           )}
           <Environment preset="city" />
         </Canvas>

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Room } from '../../models/types';
 import * as THREE from 'three';
 import { RigidBody } from '@react-three/rapier';
@@ -124,20 +124,66 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
   const w = room.width;
   const d = room.height;
 
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef(new THREE.Vector3());
+  const roomStart = useRef({ x: 0, y: 0 });
+
   const handlePointerDown = (e: any) => {
-    if (isFirstPerson) return;
+    if (isFirstPerson || room.isLocked) return;
     e.stopPropagation();
-    setSelectedSpaceId(isSelected ? null : room.id);
+    setSelectedSpaceId(room.id);
+    setIsDragging(true);
+    useStore.getState().setIsDragging3D(true);
+    e.target.setPointerCapture(e.pointerId);
+    document.body.style.cursor = 'grabbing';
+    
+    dragStart.current.copy(e.point);
+    roomStart.current = { x: room.x, y: room.y };
+  };
+
+  const handlePointerMove = (e: any) => {
+    if (isDragging) {
+      e.stopPropagation();
+      const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+      const target = new THREE.Vector3();
+      e.ray.intersectPlane(plane, target);
+      
+      if (target) {
+        const dx = target.x - dragStart.current.x;
+        const dz = target.z - dragStart.current.z;
+        updateSpacePosition(room.id, roomStart.current.x + dx, roomStart.current.y + dz);
+      }
+    }
+  };
+
+  const handlePointerUp = (e: any) => {
+    if (isDragging) {
+      e.stopPropagation();
+      setIsDragging(false);
+      useStore.getState().setIsDragging3D(false);
+      if (e.target.hasPointerCapture(e.pointerId)) {
+        e.target.releasePointerCapture(e.pointerId);
+      }
+      document.body.style.cursor = 'grab';
+      
+      const snappedX = Math.round(room.x * 2) / 2;
+      const snappedY = Math.round(room.y * 2) / 2;
+      updateSpacePosition(room.id, snappedX, snappedY);
+    }
   };
 
   const handlePointerOver = (e: any) => {
+    if (isDragging) return;
     e.stopPropagation();
     setHoveredSpaceId(room.id);
+    document.body.style.cursor = 'grab';
   };
 
   const handlePointerOut = (e: any) => {
+    if (isDragging) return;
     e.stopPropagation();
     setHoveredSpaceId(null);
+    document.body.style.cursor = 'auto';
   };
 
   const isHighlighted = isSelected || isHovered;
@@ -174,6 +220,9 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
       position={[room.x + w / 2, 0, room.y + d / 2]}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
     >
       <RigidBody type="fixed" friction={1}>
         <mesh receiveShadow position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} onPointerDown={handlePointerDown}>
@@ -223,22 +272,6 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
 
   return (
     <>
-      {isSelected && !isFirstPerson && !room.isLocked ? (
-        <TransformControls
-          object={groupRef}
-          mode="translate"
-          showY={false}
-          onMouseUp={(e) => {
-            if (groupRef.current) {
-              const x = groupRef.current.position.x;
-              const z = groupRef.current.position.z;
-              const snappedX = Math.round((x - w / 2) * 2) / 2;
-              const snappedY = Math.round((z - d / 2) * 2) / 2;
-              updateSpacePosition(room.id, snappedX, snappedY);
-            }
-          }}
-        />
-      ) : null}
       {groupContent}
     </>
   );

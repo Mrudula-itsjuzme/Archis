@@ -11,6 +11,8 @@ interface StoreState {
   selectedSpaceId: string | null;
   hoveredSpaceId: string | null;
   clientViewMode: boolean;
+  isDragging3D: boolean;
+  setIsDragging3D: (isDragging: boolean) => void;
   setClientViewMode: (enabled: boolean) => void;
   workspaceMode: 'plan' | '3d' | 'split';
   semanticOverlay: 'none' | 'privacy' | 'circulation' | 'daylight';
@@ -81,6 +83,8 @@ export const useStore = create<StoreState>((set) => ({
   setHoveredSpaceId: (id) => set({ hoveredSpaceId: id }),
 
   clientViewMode: false,
+  isDragging3D: false,
+  setIsDragging3D: (isDragging3D) => set({ isDragging3D }),
   workspaceMode: "split",
   semanticOverlay: "none",
   setSemanticOverlay: (overlay) => set({ semanticOverlay: overlay }),
