@@ -44,21 +44,15 @@ export default function Sidebar() {
           >
             Layers
           </button>
-          <button 
-            onClick={() => setActiveTab('views')}
-            className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'views' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-          >
-            Views
-          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-6">
-        
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-5">
         {activeTab === 'project' && (
           <>
-            <div className="flex flex-col gap-2">
-              <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Demo Projects</h2>
+            <div className="flex flex-col gap-2 mb-6">
+              <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Active Project</h2>
               <select 
                 className="bg-gray-50 border border-gray-200 p-2 text-xs font-medium rounded-md outline-none text-gray-700 cursor-pointer"
                 value={model.project.id}
@@ -118,12 +112,13 @@ export default function Sidebar() {
         {activeTab === 'layers' && (
           <div className="flex flex-col gap-4">
             <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Tracing Layer</h2>
-            {!blueprintUrl ? (
-              <label className="cursor-pointer bg-white border border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center py-4 text-xs font-medium text-gray-600">
-                Upload Blueprint Image
-                <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleImageUpload} />
-              </label>
-            ) : (
+            
+            <label className="cursor-pointer bg-white border border-dashed border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center py-3 text-xs font-medium text-gray-600 mb-2">
+              {blueprintUrl ? 'Replace Blueprint Image' : 'Upload Blueprint Image'}
+              <input type="file" accept="image/*,application/pdf" className="hidden" onChange={handleImageUpload} />
+            </label>
+
+            {blueprintUrl && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs flex flex-col gap-4">
                 <div className="flex justify-between items-center pb-2 border-b border-gray-200">
                   <span className="font-semibold text-gray-700">Underlay Active</span>
@@ -169,14 +164,6 @@ export default function Sidebar() {
             )}
           </div>
         )}
-
-        {activeTab === 'views' && (
-          <div className="flex flex-col gap-4">
-             <h2 className="text-[10px] font-bold uppercase tracking-wider text-gray-400">View Controls</h2>
-             <p className="text-xs text-gray-500">Use the top bar in the workspace to switch between Plan, 3D, and Semantic Overlays.</p>
-          </div>
-        )}
-
       </div>
     </div>
   );
