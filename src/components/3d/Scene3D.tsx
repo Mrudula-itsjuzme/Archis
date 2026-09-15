@@ -1,15 +1,33 @@
-import { useState, useMemo } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useState, useMemo, useEffect } from 'react';
+import { Canvas, useThree } from '@react-three/fiber';
 import { Environment, Grid, PointerLockControls, OrbitControls, KeyboardControls } from '@react-three/drei';
 import { Physics, RigidBody } from '@react-three/rapier';
+import * as THREE from 'three';
 // @ts-ignore
 import { Ecctrl } from 'ecctrl';
 import { useStore } from '../../store/useStore';
 import Room3D from './Room3D';
 
+function CameraRig({ view, centerX, centerY }: { view: string, centerX: number, centerY: number }) {
+  const { camera } = useThree();
+  const target = new THREE.Vector3(0, 0, 0);
+
+  useEffect(() => {
+    if (view === 'top') {
+      camera.position.set(0, 35, 0);
+    } else {
+      camera.position.set(-15, 25, 15);
+    }
+    camera.lookAt(target);
+  }, [view, camera, centerX, centerY]);
+
+  return null;
+}
+
 export default function Scene3D() {
   const model = useStore(state => state.model);
   const [isFirstPerson, setIsFirstPerson] = useState(false);
+  const [cameraView, setCameraView] = useState<'perspective' | 'top'>('perspective');
 
   let minX = 0, maxX = 0, minY = 0, maxY = 0;
   if (model.rooms.length > 0) {
@@ -34,10 +52,16 @@ export default function Scene3D() {
     <div className="w-full h-full relative">
       <div className="absolute top-4 right-4 z-20 flex gap-2">
         <button 
-          onClick={() => setIsFirstPerson(false)}
-          className={`px-3 py-1 text-[10px] font-mono uppercase tracking-widest border transition-colors ${!isFirstPerson ? 'bg-[#3b5998] text-white border-transparent' : 'bg-white/80 text-[#2c2c2c] border-black/10'}`}
+          onClick={() => { setIsFirstPerson(false); setCameraView('perspective'); }}
+          className={`px-3 py-1 text-[10px] font-mono uppercase tracking-widest border transition-colors ${!isFirstPerson && cameraView === 'perspective' ? 'bg-[#3b5998] text-white border-transparent' : 'bg-white/80 text-[#2c2c2c] border-black/10'}`}
         >
-          Orbit
+          Iso
+        </button>
+        <button 
+          onClick={() => { setIsFirstPerson(false); setCameraView('top'); }}
+          className={`px-3 py-1 text-[10px] font-mono uppercase tracking-widest border transition-colors ${!isFirstPerson && cameraView === 'top' ? 'bg-[#3b5998] text-white border-transparent' : 'bg-white/80 text-[#2c2c2c] border-black/10'}`}
+        >
+          Top
         </button>
         <button 
           onClick={() => setIsFirstPerson(true)}
@@ -48,14 +72,17 @@ export default function Scene3D() {
       </div>
 
       <KeyboardControls map={keyboardMap}>
-        <Canvas shadows camera={{ position: [centerX, 18, centerY + 12], fov: 50 }}>
+        <Canvas shadows camera={{ position: [centerX - 15, 25, centerY + 15], fov: 40 }}>
+          {!isFirstPerson && <CameraRig view={cameraView} centerX={centerX} centerY={centerY} />}
           <color attach="background" args={['#efedea']} />
-          <ambientLight intensity={0.2} />
+          <hemisphereLight intensity={0.6} groundColor="#d4d4d4" />
+          <ambientLight intensity={0.4} />
           <directionalLight 
             castShadow 
-            position={[15, 25, 10]} 
-            intensity={1.8} 
-            shadow-mapSize={[2048, 2048]} shadow-bias={-0.0001}
+            position={[10, 30, 20]} 
+            intensity={1.2} 
+            shadow-mapSize={[2048, 2048]} 
+            shadow-bias={-0.0005}
           />
           
           <Physics>
