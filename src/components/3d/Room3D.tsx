@@ -145,15 +145,28 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
   // Architectural neutral palette
   const wallColor = '#2c2c2c';
   
-  const floorColors: Record<string, string> = {
-    living: '#d6c6b3', // light wood tint
-    bedroom: '#d6c6b3',
-    kitchen: '#e8e8e8', // tile
-    bathroom: '#e8e8e8',
-    circulation: '#f0f0f0',
+  const floorColors: Record<string, string> = { living: "#d6c6b3", bedroom: "#d6c6b3", kitchen: "#e8e8e8", bathroom: "#e8e8e8", circulation: "#f0f0f0" };
+  const semanticOverlay = useStore(state => state.semanticOverlay);
+
+  const getOverlayColor = () => {
+    if (semanticOverlay === 'privacy') {
+      if (['bedroom', 'bathroom'].includes(room.type)) return '#ef4444'; // red-500
+      if (['living', 'kitchen'].includes(room.type)) return '#fbbf24'; // amber-400
+      return '#10b981'; // emerald-500
+    }
+    if (semanticOverlay === 'circulation') {
+      if (room.type === 'circulation') return '#3b82f6'; // blue-500
+      return '#e5e7eb'; // gray-200
+    }
+    if (semanticOverlay === 'daylight') {
+      if (['living', 'bedroom'].includes(room.type)) return '#fde047'; // yellow-300
+      return '#1e3a8a'; // blue-900
+    }
+    return floorColors[room.type] || '#f0f0f0';
   };
   
-  const floorColor = isSelected ? '#b8c9e6' : (floorColors[room.type] || '#f0f0f0');
+  const baseColor = getOverlayColor();
+  const floorColor = isSelected ? '#b8c9e6' : baseColor;
 
   const groupContent = (
     <group 

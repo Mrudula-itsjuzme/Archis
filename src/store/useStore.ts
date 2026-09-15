@@ -13,6 +13,8 @@ interface StoreState {
   clientViewMode: boolean;
   setClientViewMode: (enabled: boolean) => void;
   workspaceMode: 'plan' | '3d' | 'split';
+  semanticOverlay: 'none' | 'privacy' | 'circulation' | 'daylight';
+  setSemanticOverlay: (overlay: 'none' | 'privacy' | 'circulation' | 'daylight') => void;
   setWorkspaceMode: (mode: 'plan' | '3d' | 'split') => void;
   setSelectedSpaceId: (id: string | null) => void;
   setHoveredSpaceId: (id: string | null) => void;
@@ -80,6 +82,8 @@ export const useStore = create<StoreState>((set) => ({
 
   clientViewMode: false,
   workspaceMode: "split",
+  semanticOverlay: "none",
+  setSemanticOverlay: (overlay) => set({ semanticOverlay: overlay }),
   setWorkspaceMode: (mode) => set({ workspaceMode: mode }),
   setClientViewMode: (enabled) => set({ clientViewMode: enabled }),
   

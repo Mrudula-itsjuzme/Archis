@@ -70,12 +70,32 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
     e.stopPropagation();
   };
 
+  const semanticOverlay = useStore(state => state.semanticOverlay);
+
   const styling: Record<string, string> = {
     living: 'bg-[#d6c6b3]',
     kitchen: 'bg-[#e8e8e8]',
     bedroom: 'bg-[#d6c6b3]',
     bathroom: 'bg-[#e8e8e8]',
     circulation: 'bg-[#f0f0f0]',
+  };
+
+  const getOverlayStyle = () => {
+    if (semanticOverlay === 'privacy') {
+      if (['bedroom', 'bathroom'].includes(room.type)) return 'bg-red-500/40'; // Private
+      if (['living', 'kitchen'].includes(room.type)) return 'bg-amber-400/40'; // Semi
+      return 'bg-emerald-500/40'; // Public
+    }
+    if (semanticOverlay === 'circulation') {
+      if (room.type === 'circulation') return 'bg-blue-500/40';
+      return 'bg-gray-200/40 opacity-50';
+    }
+    if (semanticOverlay === 'daylight') {
+      // Simplistic heuristic: assume larger rooms get more light, or just fake a daylight gradient
+      if (['living', 'bedroom'].includes(room.type)) return 'bg-yellow-300/40';
+      return 'bg-blue-900/10';
+    }
+    return styling[room.type] || styling.living;
   };
   
   const textStyling = 'text-[#2c2c2c]/80';
@@ -88,7 +108,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       onPointerCancel={handlePointerUp}
       onPointerEnter={() => setHoveredSpaceId(room.id)}
       onPointerLeave={() => setHoveredSpaceId(null)}
-      className={`absolute border-[3px] flex flex-col cursor-move select-none transition-all overflow-hidden ${isSelected ? 'border-[#3b5998] bg-[#b8c9e6] shadow-xl z-20 ring-4 ring-blue-500/30' : isHovered ? 'border-[#3b5998] shadow-md z-10' : `border-[#2c2c2c] shadow-sm z-10 ${styling[room.type] || styling.living}`}`}
+      className={`absolute border-[3px] flex flex-col cursor-move select-none transition-all overflow-hidden ${isSelected ? 'border-[#3b5998] bg-[#b8c9e6] shadow-xl z-20 ring-4 ring-blue-500/30' : isHovered ? 'border-[#3b5998] shadow-md z-10' : `border-[#2c2c2c] shadow-sm z-10 ${getOverlayStyle()}`}`}
       style={{
         left: offsetX + room.x * scale,
         top: offsetY + room.y * scale,

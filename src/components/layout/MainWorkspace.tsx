@@ -46,6 +46,18 @@ export default function MainWorkspace() {
         </div>
 
         <div className="absolute right-6 flex items-center gap-4">
+          <div className="flex bg-gray-100 p-1 rounded-lg">
+            <select 
+              value={useStore(state => state.semanticOverlay)}
+              onChange={(e) => useStore.getState().setSemanticOverlay(e.target.value as any)}
+              className="px-3 py-1 text-xs font-medium bg-transparent border-none outline-none text-gray-600 cursor-pointer"
+            >
+              <option value="none">Space (Default)</option>
+              <option value="privacy">Privacy Zones</option>
+              <option value="circulation">Circulation</option>
+              <option value="daylight">Daylight</option>
+            </select>
+          </div>
           <div className="flex bg-gray-100 p-1 rounded-lg cursor-pointer" onClick={() => setClientViewMode(!clientViewMode)}>
             <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${!clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Design View</div>
             <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Client View</div>
