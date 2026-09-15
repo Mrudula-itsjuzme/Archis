@@ -71,20 +71,14 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
   };
 
   const styling: Record<string, string> = {
-    living: 'bg-[#fffdfa]/80 border-orange-700/20 text-orange-900/60',
-    kitchen: 'bg-[#fffdfa]/80 border-yellow-700/20 text-yellow-900/60',
-    bedroom: 'bg-[#fffdfa]/80 border-blue-700/20 text-blue-900/60',
-    bathroom: 'bg-[#fffdfa]/80 border-teal-700/20 text-teal-900/60',
-    circulation: 'bg-[#fdfdfc]/80 border-[#2c2c2c]/10 text-[#2c2c2c]/50',
+    living: 'bg-[#d6c6b3]',
+    kitchen: 'bg-[#e8e8e8]',
+    bedroom: 'bg-[#d6c6b3]',
+    bathroom: 'bg-[#e8e8e8]',
+    circulation: 'bg-[#f0f0f0]',
   };
   
-  const accentColors: Record<string, string> = {
-    living: 'bg-orange-600/40',
-    kitchen: 'bg-yellow-600/40',
-    bedroom: 'bg-blue-600/40',
-    bathroom: 'bg-teal-600/40',
-    circulation: 'bg-[#2c2c2c]/10',
-  }
+  const textStyling = 'text-[#2c2c2c]/80';
 
   return (
     <div
@@ -94,7 +88,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
       onPointerCancel={handlePointerUp}
       onPointerEnter={() => setHoveredSpaceId(room.id)}
       onPointerLeave={() => setHoveredSpaceId(null)}
-      className={`absolute border flex flex-col cursor-move select-none transition-shadow backdrop-blur-sm overflow-hidden ${styling[room.type] || styling.living} ${isSelected ? 'shadow-xl z-20 opacity-100 ring-2 ring-blue-500/50' : isHovered ? 'shadow-md z-10 border-blue-400/50' : 'shadow-[0_2px_10px_rgba(0,0,0,0.02)] z-10 hover:shadow-md hover:border-black/20'}`}
+      className={`absolute border-[3px] flex flex-col cursor-move select-none transition-all overflow-hidden ${isSelected ? 'border-[#3b5998] bg-[#b8c9e6] shadow-xl z-20 ring-4 ring-blue-500/30' : isHovered ? 'border-[#3b5998] shadow-md z-10' : `border-[#2c2c2c] shadow-sm z-10 ${styling[room.type] || styling.living}`}`}
       style={{
         left: offsetX + room.x * scale,
         top: offsetY + room.y * scale,
@@ -102,10 +96,7 @@ export default function Room2D({ room, scale, offsetX, offsetY }: Room2DProps) {
         height: room.height * scale,
       }}
     >
-      {/* Type accent bar */}
-      <div className={`absolute top-0 left-0 w-full h-[3px] ${accentColors[room.type]}`} />
-
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+      <div className={`absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 ${textStyling}`}>
         <span className="font-medium text-xs tracking-wide">{room.name}</span>
         <span className="text-[9px] font-mono mt-1 opacity-70">
           {room.width.toFixed(1)} &times; {room.height.toFixed(1)} m

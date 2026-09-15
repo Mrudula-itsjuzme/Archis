@@ -19,7 +19,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-72 h-full panel-bg draft-border overflow-y-auto flex flex-col p-5 gap-6">
+    <div className="w-72 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-y-auto flex flex-col p-5 gap-6">
       <div className="mb-2">
         <h1 className="text-xl font-bold tracking-tight mb-1">Archis</h1>
         <p className="text-xs opacity-60 font-mono">SEMANTIC DESIGN ENGINE</p>

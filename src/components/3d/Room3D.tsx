@@ -143,7 +143,7 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
   const isHighlighted = isSelected || isHovered;
 
   // Architectural neutral palette
-  const wallColor = '#fafafa';
+  const wallColor = '#2c2c2c';
   
   const floorColors: Record<string, string> = {
     living: '#d6c6b3', // light wood tint

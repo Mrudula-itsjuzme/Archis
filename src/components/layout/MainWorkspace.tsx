@@ -9,43 +9,41 @@ export default function MainWorkspace() {
   const setClientViewMode = useStore(state => state.setClientViewMode);
 
   return (
-    <div className="flex-1 flex flex-col h-full relative">
+    <div className="flex-1 flex flex-col h-full relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Top Bar */}
-      <div className="h-12 border-b bg-white flex items-center justify-between px-6">
-        <div className="flex items-center gap-4">
+      <div className="h-14 border-b border-gray-100 flex items-center justify-center px-6 relative">
+        <div className="absolute left-6 flex items-center gap-4">
           <button 
             onClick={resetModel}
-            className="text-xs font-mono uppercase tracking-widest text-[#2c2c2c]/60 hover:text-black"
+            className="text-xs font-medium px-3 py-1.5 rounded hover:bg-gray-50 text-gray-600 transition-colors"
           >
             Reset Demo
           </button>
         </div>
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={clientViewMode} 
-              onChange={(e) => setClientViewMode(e.target.checked)} 
-            />
-            Client View
-          </label>
+        
+        {/* Mock segmented control */}
+        <div className="flex bg-gray-100 p-1 rounded-lg">
+          <div className="px-6 py-1.5 text-xs font-semibold bg-white rounded-md shadow-sm">Split</div>
+          <div className="px-6 py-1.5 text-xs font-medium text-gray-500">Plan</div>
+          <div className="px-6 py-1.5 text-xs font-medium text-gray-500">3D</div>
+        </div>
+
+        <div className="absolute right-6 flex items-center gap-4">
+          <div className="flex bg-gray-100 p-1 rounded-lg cursor-pointer" onClick={() => setClientViewMode(!clientViewMode)}>
+            <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${!clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Design View</div>
+            <div className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-all ${clientViewMode ? 'bg-white shadow-sm' : 'text-gray-500'}`}>Client View</div>
+          </div>
         </div>
       </div>
       
       <div className="flex-1 flex overflow-hidden">
         {/* Left: 2D View */}
-        <div className="flex-[1.2] relative overflow-hidden bg-[#fdfdfc] grid-bg border-r border-t-0 border-b-0 border-l-0">
-          <div className="absolute top-6 left-6 z-10 px-4 py-2 bg-white draft-border text-[10px] font-mono uppercase tracking-widest text-[#2c2c2c]/60">
-            2D Interactive Plan
-          </div>
+        <div className="flex-[1.2] relative overflow-hidden bg-[#faf9f6] grid-bg border-r border-gray-100">
           <FloorPlan />
         </div>
         
         {/* Right: 3D View */}
         <div className="flex-1 relative bg-[#efedea]">
-          <div className="absolute top-6 right-6 z-10 px-4 py-2 bg-[#efedea]/50 border border-[rgba(44,44,44,0.1)] backdrop-blur text-[10px] font-mono uppercase tracking-widest text-[#2c2c2c]/50">
-            3D Semantic Extrusion
-          </div>
           <Scene3D />
         </div>
       </div>

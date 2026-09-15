@@ -9,14 +9,14 @@ export default function RightSidebar() {
 
   if (clientViewMode) {
     return (
-      <div className="w-96 h-full bg-white border-l overflow-y-auto flex flex-col p-5 shadow-lg relative z-50">
+      <div className="w-96 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-y-auto flex flex-col p-5 gap-6 relative z-50">
         <ClientView />
       </div>
     );
   }
 
   return (
-    <div className="w-80 h-full panel-bg draft-border border-l overflow-y-auto flex flex-col p-5 gap-6">
+    <div className="w-80 h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-y-auto flex flex-col p-5 gap-6">
       <ChangeLedger />
       <ConstraintStatus />
       <VariantExplorer />
