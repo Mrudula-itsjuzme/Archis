@@ -63,6 +63,7 @@ export interface SemanticModel {
   rooms: Space[];
   doors: Door[];
   furniture?: Furniture[];
+  intentHypotheses?: IntentHypothesis[];
 }
 
 export interface ChangeEvent {
@@ -89,6 +90,7 @@ export interface ConstraintResult {
   isViolated: boolean;
   message?: string;
   violatingSpaceIds?: string[];
+  violatingRoomIds?: string[];
 }
 
 export interface Constraint {
@@ -104,4 +106,42 @@ export interface VariantStats {
   circulationAreaChange: number;
   primaryAreaChange: number;
   preservedAdjacencies: string[];
+}
+
+// Intent preservation types (from intent-preservation-demo branch)
+export type IntentDecision = 'UNREVIEWED' | 'PROTECT' | 'IGNORE';
+export type IntentKind = 'ADJACENCY' | 'ZONING' | 'ANCHOR' | 'CIRCULATION' | 'GEOMETRY';
+export type IntentStrength = 'STRONG' | 'PREFERENCE' | 'WEAK';
+
+export interface IntentHypothesis {
+  id: string;
+  label: string;
+  description: string;
+  kind: IntentKind;
+  strength: IntentStrength;
+  confidence: number;
+  involvedSpaceIds: string[];
+  decision: IntentDecision;
+  rationale: string;
+}
+
+export interface DesignDistance {
+  geometry: number;
+  topology: number;
+  intent: number;
+  total: number;
+}
+
+export interface ImpactItem {
+  category: 'Geometry' | 'Relationship' | 'Constraint' | 'Intent';
+  severity: 'INFO' | 'WARNING' | 'CRITICAL';
+  message: string;
+}
+
+export interface ChangeImpactReport {
+  request: string;
+  impacts: ImpactItem[];
+  distance: DesignDistance;
+  hardConstraintsSatisfied: boolean;
+  protectedIntentPreserved: number;
 }

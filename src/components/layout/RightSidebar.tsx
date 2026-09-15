@@ -3,6 +3,7 @@ import { useStore } from '../../store/useStore';
 import { evaluateAllConstraints } from '../../engine/constraints';
 import VariantExplorer from '../ui/VariantExplorer';
 import ChangeLedger from '../ui/ChangeLedger';
+import IntentPanel from '../ui/IntentPanel';
 import type { Recommendation } from '../../store/gemini';
 
 const CATEGORY_ICON: Record<string, string> = {
@@ -119,7 +120,7 @@ export default function RightSidebar() {
   const recommendations = useStore(s => s.recommendations);
   const isLoadingRecommendations = useStore(s => s.isLoadingRecommendations);
   const fetchRecommendations = useStore(s => s.fetchRecommendations);
-  const [activeTab, setActiveTab] = useState<'insights' | 'variants' | 'history'>('insights');
+  const [activeTab, setActiveTab] = useState<'insights' | 'intent' | 'variants' | 'history'>('insights');
   const evaluations = useMemo(() => evaluateAllConstraints(model), [model]);
 
   const passCount = evaluations.filter(e => !e.result.isViolated).length;
@@ -129,12 +130,12 @@ export default function RightSidebar() {
 
   return (
     <div className="w-72 h-full bg-white border-l border-gray-200 flex flex-col shrink-0 overflow-hidden">
-      <div className="flex border-b border-gray-100 shrink-0">
-        {(['insights', 'variants', 'history'] as const).map(tab => (
+      <div className="flex border-b border-gray-100 shrink-0 overflow-x-auto">
+        {(['insights', 'intent', 'variants', 'history'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-3 text-xs font-semibold capitalize transition-colors ${activeTab === tab ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-3 text-[11px] font-semibold capitalize transition-colors whitespace-nowrap px-1 ${activeTab === tab ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
           >
             {tab}
             {tab === 'insights' && recommendations.length > 0 && (
@@ -283,6 +284,7 @@ export default function RightSidebar() {
           </>
         )}
         {activeTab === 'variants' && <VariantExplorer />}
+        {activeTab === 'intent' && <IntentPanel />}
         {activeTab === 'history' && <ChangeLedger />}
       </div>
     </div>
