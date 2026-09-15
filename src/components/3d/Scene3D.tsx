@@ -8,18 +8,23 @@ import { Ecctrl } from 'ecctrl';
 import { useStore } from '../../store/useStore';
 import Room3D from './Room3D';
 
-function CameraRig({ view, centerX, centerY }: { view: string, centerX: number, centerY: number }) {
+function CameraRig({ view, centerX, centerY, size }: { view: string, centerX: number, centerY: number, size: number }) {
   const { camera } = useThree();
   const target = new THREE.Vector3(0, 0, 0);
 
   useEffect(() => {
+    // Sane padding based on project size
+    const distance = Math.max(25, size * 1.2);
+    
     if (view === 'top') {
-      camera.position.set(0, 35, 0);
+      camera.position.set(0, distance * 1.5, 0);
     } else {
-      camera.position.set(-15, 25, 15);
+      // Iso view
+      camera.position.set(-distance * 0.8, distance, distance * 0.8);
     }
     camera.lookAt(target);
-  }, [view, camera, centerX, centerY]);
+    camera.updateProjectionMatrix();
+  }, [view, camera, centerX, centerY, size]);
 
   return null;
 }
@@ -38,6 +43,7 @@ export default function Scene3D() {
   }
   const centerX = (minX + maxX) / 2;
   const centerY = (minY + maxY) / 2;
+  const size = Math.max(maxX - minX, maxY - minY);
 
   const keyboardMap = useMemo(() => [
     { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -73,7 +79,7 @@ export default function Scene3D() {
 
       <KeyboardControls map={keyboardMap}>
         <Canvas shadows camera={{ position: [centerX - 15, 25, centerY + 15], fov: 40 }}>
-          {!isFirstPerson && <CameraRig view={cameraView} centerX={centerX} centerY={centerY} />}
+          {!isFirstPerson && <CameraRig view={cameraView} centerX={centerX} centerY={centerY} size={size} />}
           <color attach="background" args={['#efedea']} />
           <hemisphereLight intensity={0.6} groundColor="#d4d4d4" />
           <ambientLight intensity={0.4} />

@@ -6,15 +6,16 @@ interface StoreState {
   model: SemanticModel;
   originalModel: SemanticModel;
   
-  // Interaction State
+  // UI State
+  activeLevelId: string | null;
   selectedSpaceId: string | null;
   hoveredSpaceId: string | null;
-  setSelectedSpaceId: (id: string | null) => void;
-  setHoveredSpaceId: (id: string | null) => void;
-
-  // UI State
   clientViewMode: boolean;
   setClientViewMode: (enabled: boolean) => void;
+  workspaceMode: 'plan' | '3d' | 'split';
+  setWorkspaceMode: (mode: 'plan' | '3d' | 'split') => void;
+  setSelectedSpaceId: (id: string | null) => void;
+  setHoveredSpaceId: (id: string | null) => void;
   
   // Ledger
   changeLedger: ChangeEvent[];
@@ -71,12 +72,15 @@ export const useStore = create<StoreState>((set) => ({
   model: JSON.parse(JSON.stringify(initialModel)),
   originalModel: initialModel,
   
+  activeLevelId: null,
   selectedSpaceId: null,
   hoveredSpaceId: null,
   setSelectedSpaceId: (id) => set({ selectedSpaceId: id }),
   setHoveredSpaceId: (id) => set({ hoveredSpaceId: id }),
 
   clientViewMode: false,
+  workspaceMode: "split",
+  setWorkspaceMode: (mode) => set({ workspaceMode: mode }),
   setClientViewMode: (enabled) => set({ clientViewMode: enabled }),
   
   changeLedger: [],
@@ -118,7 +122,8 @@ export const useStore = create<StoreState>((set) => ({
   previewVariantModel: null,
   setPreviewVariantModel: (model) => set({ previewVariantModel: model }),
       changeLedger: [],
-      selectedSpaceId: null,
+      activeLevelId: null,
+  selectedSpaceId: null,
       hoveredSpaceId: null
     };
   }),
