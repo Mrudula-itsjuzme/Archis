@@ -8,6 +8,7 @@ export default function Sidebar() {
     blueprintUrl, setBlueprintConfig, 
     blueprintOpacity,
     blueprintScale, blueprintRotation, blueprintLocked,
+    isExtracting,
     selectedSpaceId, setSelectedSpaceId
   } = useStore();
 
@@ -131,10 +132,10 @@ export default function Sidebar() {
                 
                 <button 
                   onClick={() => useStore.getState().extractBlueprint()}
-                  disabled={useStore(state => state.isExtracting)}
+                  disabled={isExtracting}
                   className="w-full bg-[#3b5998] hover:bg-[#2d4373] text-white py-2 rounded-lg text-xs font-semibold shadow-sm transition-colors flex justify-center items-center gap-2"
                 >
-                  {useStore(state => state.isExtracting) ? (
+                  {isExtracting ? (
                     <>
                       <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Extracting Spaces...

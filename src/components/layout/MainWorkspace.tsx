@@ -9,6 +9,8 @@ export default function MainWorkspace() {
   const setClientViewMode = useStore(state => state.setClientViewMode);
   const workspaceMode = useStore(state => state.workspaceMode);
   const setWorkspaceMode = useStore(state => state.setWorkspaceMode);
+  const semanticOverlay = useStore(state => state.semanticOverlay);
+  const setSemanticOverlay = useStore(state => state.setSemanticOverlay);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -50,7 +52,7 @@ export default function MainWorkspace() {
         {/* Right: Overlays & Views */}
         <div className="flex items-center gap-3">
           <select 
-            value={useStore(state => state.semanticOverlay)}
+            value={semanticOverlay}
             onChange={(e) => useStore.getState().setSemanticOverlay(e.target.value as any)}
             className="px-3 py-1.5 text-xs font-medium bg-gray-50 border border-gray-200 rounded-lg text-gray-700 outline-none cursor-pointer hover:bg-gray-100 transition-colors"
           >

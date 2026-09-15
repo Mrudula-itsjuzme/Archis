@@ -29,6 +29,11 @@ function CameraRig({ view, centerX, centerY, size }: { view: string, centerX: nu
   return null;
 }
 
+const SceneControls = () => {
+  const isDragging3D = useStore(state => state.isDragging3D);
+  return <OrbitControls makeDefault enabled={!isDragging3D} target={[0, 0, 0]} maxPolarAngle={Math.PI / 2 - 0.05} minPolarAngle={0.1} />;
+};
+
 export default function Scene3D() {
   const model = useStore(state => state.model);
   const [isFirstPerson, setIsFirstPerson] = useState(false);
@@ -131,7 +136,7 @@ export default function Scene3D() {
           {isFirstPerson ? (
             <PointerLockControls />
           ) : (
-            <OrbitControls makeDefault enabled={!useStore(state => state.isDragging3D)}  target={[0, 0, 0]} maxPolarAngle={Math.PI / 2 - 0.05} minPolarAngle={0.1} />
+            <SceneControls />
           )}
           <Environment preset="city" />
         </Canvas>
