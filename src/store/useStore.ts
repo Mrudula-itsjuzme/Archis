@@ -13,6 +13,8 @@ interface StoreState {
   clientViewMode: boolean;
   isDragging3D: boolean;
   setIsDragging3D: (isDragging: boolean) => void;
+  isExtracting: boolean;
+  extractBlueprint: () => Promise<void>;
   setClientViewMode: (enabled: boolean) => void;
   workspaceMode: 'plan' | '3d' | 'split';
   semanticOverlay: 'none' | 'privacy' | 'circulation' | 'daylight';
@@ -101,6 +103,25 @@ export const useStore = create<StoreState>((set) => ({
   blueprintOffsetX: 100,
   blueprintOffsetY: 100,
   blueprintLocked: false,
+  isExtracting: false,
+  extractBlueprint: async () => {
+    set({ isExtracting: true });
+    await new Promise(r => setTimeout(r, 2000));
+    set(state => {
+      // In a real app, this would send the image to a vision model (like Gemini)
+      // Here, we load the school project layout to simulate successful extraction for the demo.
+      
+      return { 
+        isExtracting: false,
+        model: {
+          ...state.model,
+          project: schoolWingProject,
+          activeLevelId: schoolWingProject.buildings[0].levels[0].id,
+          rooms: schoolWingProject.buildings[0].levels[0].spaces
+        }
+      };
+    });
+  },
   setBlueprintConfig: (config) => set((state) => ({
     blueprintUrl: config.url !== undefined ? config.url : state.blueprintUrl,
     blueprintOpacity: config.opacity !== undefined ? config.opacity : state.blueprintOpacity,

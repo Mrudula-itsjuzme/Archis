@@ -214,6 +214,11 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
   const baseColor = getOverlayColor();
   const floorColor = isSelected ? '#b8c9e6' : baseColor;
 
+  const PhysicsWrapper = ({ active, children, ...props }: any) => {
+    if (!active) return <>{children}</>;
+    return <RigidBody {...props}>{children}</RigidBody>;
+  };
+
   const groupContent = (
     <group 
       ref={groupRef} 
@@ -224,7 +229,7 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerUp}
     >
-      <RigidBody type="fixed" friction={1}>
+      <PhysicsWrapper active={isFirstPerson} type="fixed" friction={1}>
         <mesh receiveShadow position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} onPointerDown={handlePointerDown}>
           <planeGeometry args={[w, d]} />
           <meshStandardMaterial color={floorColor} roughness={0.9} />
@@ -232,13 +237,13 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
             <Edges scale={1.0} threshold={15} color="#3b5998" />
           )}
         </mesh>
-      </RigidBody>
+      </PhysicsWrapper>
 
       {/* Deterministic Furniture */}
       <DeterministicFurniture roomType={room.type} w={w} d={d} />
 
       {/* Walls */}
-      <RigidBody type="fixed" friction={0.5}>
+      <PhysicsWrapper active={isFirstPerson} type="fixed" friction={0.5}>
         <mesh castShadow receiveShadow position={[0, WALL_HEIGHT / 2, -d / 2 + T / 2]} onPointerDown={handlePointerDown}>
           <boxGeometry args={[w, WALL_HEIGHT, T]} />
           <meshStandardMaterial color={wallColor} roughness={1} />
@@ -255,7 +260,7 @@ export default function Room3D({ room, isFirstPerson }: Room3DProps) {
           <boxGeometry args={[T, WALL_HEIGHT, d - T * 2]} />
           <meshStandardMaterial color={wallColor} roughness={1} />
         </mesh>
-      </RigidBody>
+      </PhysicsWrapper>
 
       {/* Hover Labels */}
       {isHighlighted && !isFirstPerson && (

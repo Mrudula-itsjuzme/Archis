@@ -129,7 +129,22 @@ export default function Sidebar() {
                   <button className="text-red-500 font-medium hover:underline" onClick={() => setBlueprintConfig({url: null})}>Remove</button>
                 </div>
                 
-                <div className="flex flex-col gap-1.5">
+                <button 
+                  onClick={() => useStore.getState().extractBlueprint()}
+                  disabled={useStore(state => state.isExtracting)}
+                  className="w-full bg-[#3b5998] hover:bg-[#2d4373] text-white py-2 rounded-lg text-xs font-semibold shadow-sm transition-colors flex justify-center items-center gap-2"
+                >
+                  {useStore(state => state.isExtracting) ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Extracting Spaces...
+                    </>
+                  ) : (
+                    '✨ Auto-Trace Spaces (AI)'
+                  )}
+                </button>
+
+                <div className="flex flex-col gap-1.5 mt-2">
                   <label className="flex justify-between text-gray-600 font-medium">Opacity <span className="text-gray-900">{Math.round(blueprintOpacity * 100)}%</span></label>
                   <input type="range" min="0" max="1" step="0.1" value={blueprintOpacity} onChange={(e) => setBlueprintConfig({ opacity: parseFloat(e.target.value) })} className="accent-[#3b5998]" />
                 </div>
