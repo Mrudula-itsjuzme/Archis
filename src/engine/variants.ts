@@ -14,7 +14,7 @@ export function generatePreserveVariant(baseModel: SemanticModel): { model: Sema
     model,
     stats: {
       circulationAreaChange: 0,
-      bedroomAreaChange: 0,
+      primaryAreaChange: 0,
       preservedAdjacencies: ['Kitchen-Living', 'Bath-Hallway', 'Bedrooms-Hallway']
     }
   };
@@ -40,7 +40,7 @@ export function generateMorePrivateVariant(baseModel: SemanticModel): { model: S
     model,
     stats: {
       circulationAreaChange: +8, // rough estimate based on +2 height * 4 width
-      bedroomAreaChange: 0,
+      primaryAreaChange: 0,
       preservedAdjacencies: ['Kitchen-Living', 'Bedrooms-Hallway (extended)']
     }
   };
@@ -74,7 +74,7 @@ export function generateMoreCompactVariant(baseModel: SemanticModel): { model: S
     model,
     stats: {
       circulationAreaChange: -2,
-      bedroomAreaChange: -3.5, // approx
+      primaryAreaChange: -3.5, // approx
       preservedAdjacencies: ['Kitchen-Living']
     }
   };

@@ -3,7 +3,7 @@ import { useStore } from '../../store/useStore';
 import { generatePreserveVariant, generateMorePrivateVariant, generateMoreCompactVariant } from '../../engine/variants';
 
 export default function VariantExplorer() {
-  const { model, originalModel, applyVariant, activeVariant, resetModel } = useStore();
+  const { model, originalModel, applyVariant, activeVariant, resetModel, setPreviewVariantModel } = useStore();
   const [showVariants, setShowVariants] = useState(false);
   
   const variants = [
@@ -37,7 +37,9 @@ export default function VariantExplorer() {
       {variants.map(v => (
         <div 
           key={v.id} 
-          onClick={() => applyVariant(v.model, v.id as any)}
+          onClick={() => { applyVariant(v.model, v.id as any); setPreviewVariantModel(null); }}
+          onMouseEnter={() => setPreviewVariantModel(v.model)}
+          onMouseLeave={() => setPreviewVariantModel(null)}
           className={`p-4 bg-white cursor-pointer transition-all border ${
             activeVariant === v.id 
               ? 'border-[#3b5998] bg-[#3b5998]/[0.02]' 
@@ -59,11 +61,11 @@ export default function VariantExplorer() {
                 </span>
               </div>
             )}
-            {v.stats.bedroomAreaChange !== 0 && (
+            {v.stats.primaryAreaChange !== 0 && (
               <div className="flex justify-between text-[10px] font-mono">
                 <span className="text-[#2c2c2c]/40 uppercase tracking-wider">Bedrooms</span>
-                <span className={v.stats.bedroomAreaChange > 0 ? 'text-[#2d4c3b]' : 'text-[#2c2c2c]/70'}>
-                  {v.stats.bedroomAreaChange > 0 ? '+' : ''}{v.stats.bedroomAreaChange} m²
+                <span className={v.stats.primaryAreaChange > 0 ? 'text-[#2d4c3b]' : 'text-[#2c2c2c]/70'}>
+                  {v.stats.primaryAreaChange > 0 ? '+' : ''}{v.stats.primaryAreaChange} m²
                 </span>
               </div>
             )}
