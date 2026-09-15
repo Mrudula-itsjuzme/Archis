@@ -113,8 +113,8 @@ export const useStore = create<StoreState>((set) => ({
     // Check if it's a data URL (needed for Gemini)
     const isDataUrl = blueprintUrl.startsWith('data:');
     
-    let apiKey = localStorage.getItem('GEMINI_API_KEY') || '';
-    if (isDataUrl) {
+    let apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
+    if (isDataUrl && !import.meta.env.VITE_GEMINI_API_KEY) {
        const userKey = window.prompt("Enter Gemini API Key for REAL AI extraction (or leave blank to use simulated demo):", apiKey);
        if (userKey !== null) {
           apiKey = userKey.trim();
