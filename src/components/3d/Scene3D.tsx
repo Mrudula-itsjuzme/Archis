@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useMemo, useEffect } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { Environment, Grid, PointerLockControls, OrbitControls, KeyboardControls } from '@react-three/drei';
@@ -7,6 +8,7 @@ import * as THREE from 'three';
 import { Ecctrl } from 'ecctrl';
 import { useStore } from '../../store/useStore';
 import Room3D from './Room3D';
+import BlueprintUnderlay3D from './BlueprintUnderlay3D';
 
 function CameraRig({ view, centerX, centerY, size }: { view: string, centerX: number, centerY: number, size: number }) {
   const { camera } = useThree();
@@ -98,6 +100,10 @@ export default function Scene3D() {
           
           <Physics>
             <group position={[-centerX, 0, -centerY]}>
+              <React.Suspense fallback={null}>
+                <BlueprintUnderlay3D centerX={centerX} centerY={centerY} />
+              </React.Suspense>
+              
               {model.rooms.map(room => (
                 <Room3D key={room.id} room={room} isFirstPerson={isFirstPerson} />
               ))}

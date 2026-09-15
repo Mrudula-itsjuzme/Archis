@@ -14,11 +14,16 @@ export default function Sidebar() {
 
   const [activeTab, setActiveTab] = useState<'project' | 'layers' | 'views'>('project');
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const url = URL.createObjectURL(file);
-      setBlueprintConfig({ url });
+      useStore.getState().setBlueprintConfig({ url });
+      
+      // Automatically trigger the AI extraction process upon upload
+      if (!useStore.getState().isExtracting) {
+        await useStore.getState().extractBlueprint();
+      }
     }
   };
 
