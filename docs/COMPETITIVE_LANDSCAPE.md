@@ -1,88 +1,102 @@
-# Competitive Landscape
+# Archis Competitive Landscape
+
+> Working document. Last research pass: September 2026. Product capabilities change quickly; re-verify before external claims.
 
 ## The uncomfortable starting point
 
-Archis is not novel because it has semantic building objects, linked 2D/3D views, constraints, or AI-assisted alternatives. Mature BIM and newer design platforms already cover large pieces of that territory.
+Archis is **not novel because it has semantic rooms and walls, linked 2D/3D views, constraints, parametric edits, or design alternatives**. Mature BIM and newer concept-design systems already cover substantial parts of that stack.
 
-The thesis must survive without pretending otherwise.
+The useful question is therefore not “who else does architecture software?” but:
 
-## Categories Archis overlaps
+> **Who starts from an architect-authored draft, identifies which properties appear intentional, asks the architect to resolve uncertainty, and then helps make the smallest useful change while explaining what the change damages or preserves?**
 
-### BIM authoring
+That is the gap Archis should test rather than assume.
 
-Revit and Archicad already treat buildings as coordinated model-centric objects rather than unrelated drawings. Archis should not pitch linked views as the invention.
+## Competitive map
 
-### Collaborative browser-native design
+| Product / workflow | What it already makes dangerous for Archis | Remaining question for Archis |
+| --- | --- | --- |
+| Autodesk Revit | Model-centric BIM, semantic building elements, coordinated views, parametric relationships, documentation | Can an intent-first reasoning layer make early revisions easier without asking firms to abandon Revit? |
+| Graphisoft Archicad | Mature BIM model, linked documentation/views, semantic objects and professional delivery workflow | Same: Archis cannot sell “one model / many views” as novelty |
+| Autodesk Forma | Early-stage/site analysis and increasingly generative schematic exploration | Can Archis operate *after the architect authors a concept*, rather than optimize from a brief/site? |
+| Snaptrude | Cloud-native conceptual/BIM workflow, connected model, collaboration, AI direction explicitly framed around architects | Probably the closest product-level threat. Archis needs a sharper intent-inference/minimal-change thesis, not “modern BIM” |
+| Finch | Rules, constraints, design systems, adaptive plan reuse and variant exploration; explicitly discusses encoded design intent | Archis must distinguish inferred/project-specific intent from designer-authored rules/templates |
+| TestFit | Rapid site/configuration generation and feasibility from constraints/economics | Archis should not compete on “generate lots of feasible options” |
+| Rhino + Grasshopper | Extremely flexible parametric/algorithmic design and optimization | Archis would need to make reasoning accessible without requiring architects to construct the parametric logic themselves |
+| SketchUp | Familiar, low-friction conceptual 3D workflow with enormous ecosystem | Adoption friction matters more than theoretical capability; an Archis wedge must coexist with familiar tools |
+| AutoCAD | Entrenched drafting workflows and file exchange | Archis cannot assume firms will migrate because its model is conceptually cleaner |
+| Planner 5D / consumer tools | Accessible plan/3D workflows and AI-assisted visualization | Not the target buyer; useful warning against becoming a consumer room generator |
+| Hypar and related computational-design platforms | Programmatic building generation and reusable functions | Reinforces that generation/automation alone is not a moat |
 
-Snaptrude is particularly close to the broad product story: connected building models, collaborative design and increasingly AI-assisted workflows. A pitch that stops at `semantic model + browser + AI` is not differentiated enough.
+## The closest research/product territory
 
-### Generative / feasibility design
+Recent floor-plan research already covers human-guided generation, constraint-conditioned layouts, multimodal understanding/editing, and plan-to-structured-model reconstruction. Therefore these phrases are **not defensible novelty claims on their own**:
 
-Autodesk Forma, TestFit and related tools explore alternatives from site, program, performance and feasibility constraints. `Generate multiple valid plans` is therefore not a sufficient wedge.
+- human-in-the-loop architectural AI
+- controllable floor-plan generation
+- semantic floor-plan understanding
+- editable generated plans
+- constraint-aware design
+- preserving “design intent” as a generic phrase
 
-### Constraint / design-system generation
+The narrower Archis hypothesis is:
 
-Finch is close to the technical territory. Its design systems, adaptive plans and encoded intent make it especially important not to claim that Archis invented constraint-aware or intent-aware variation.
+> Given an architect-authored design and a requested change, can a system infer a calibrated hierarchy of likely design invariants, let the architect correct that interpretation, and produce/explain minimal semantic changes that satisfy the new requirement while preserving the confirmed intent?
 
-### Research systems
+## What could actually differentiate Archis
 
-Recent floor-plan research increasingly combines understanding, generation, editing and multimodal conditioning. The research question cannot simply be `can AI edit a floor plan?`
+### 1. Latent intent inference
 
-## The narrower Archis wedge
+Do not ask architects to encode every rule before the system becomes useful. Infer hypotheses from the authored design and surrounding project information.
 
-Archis begins after an architect has already authored a meaningful first draft.
+### 2. Uncertainty as product behavior
 
-The bet is:
+Archis should say “I think this relationship matters” rather than pretending it understands architecture with certainty. The architect can protect, weaken, edit, or dismiss each hypothesis.
 
-> infer which properties of that particular draft appear intentional, expose those hypotheses and their uncertainty to the architect, then optimize requested revisions for minimal semantic disruption rather than generate a fresh design.
+### 3. Project-specific intent hierarchy
 
-The unit of value is not `another option`.
+Represent intent as graded priorities rather than a flat constraint list:
 
-It is `a useful change that still feels like my design`.
+- invariant / must preserve
+- strong preference
+- weak preference
+- apparently incidental
+- unknown
 
-## Why an architect might care
+### 4. Minimal-change transformation
 
-Real projects accumulate change requests. A client wants a larger kitchen. A setback changes. A bedroom must become accessible. Cost pressure removes area. A stair moves. The painful part is often not making one geometric change, but understanding everything that change quietly damages.
+Optimize around the architect’s existing scheme rather than returning unrelated alternatives. “Give the kitchen 3 m² more while disturbing the rest of my idea as little as possible” is more specific than “generate another plan.”
 
-Archis is testing whether a semantic impact layer can make those consequences explicit.
+### 5. Semantic impact analysis
 
-## Why this may belong beside existing tools first
+After an edit, explain consequences beyond geometry: area, adjacency, circulation, privacy zoning, protected relationships, daylight proxies, and confirmed project intent.
 
-Replacing an established BIM/CAD workflow creates enormous adoption friction before the thesis is even validated.
+### 6. Learning from corrections
 
-A more credible first wedge is:
+An architect rejecting or manually repairing a proposed revision is evidence about the project’s priorities. Store that as explicit, inspectable project knowledge rather than opaque personalization.
 
-`architect draft → Archis reasoning / constrained revision → approved result → existing professional workflow`
+## Why not just a Revit plugin?
 
-If architects want the capability inside their current environment, integration is a feature of the strategy, not a failure of the idea.
+It might be.
 
-## Potential moat, if earned
+That is an architectural/business decision to validate, not an ideological one. If the valuable component is intent inference + semantic impact analysis + minimal-change search, integration with existing BIM may be a much better first business than forcing migration to a new authoring environment.
 
-There is no moat merely because the current prototype has a semantic model.
+A standalone prototype is still useful because it lets us test the interaction and representation without inheriting a large incumbent API surface.
 
-A stronger moat could emerge from:
+## Why now?
 
-- architect-confirmed intent annotations tied to real drafts
-- change requests paired with accepted/rejected revisions
-- a benchmark for semantic intent preservation under change
-- calibrated models of what is likely deliberate versus incidental
-- project-specific preference learning from corrections
-- explainable semantic impact analysis
+The enabling pieces are improving simultaneously: multimodal models can reason over drawings and text more effectively, structured geometric representations can constrain generation, and architects are being exposed to increasingly capable generative tools. That does **not** prove demand. It makes the unresolved human-control problem more visible and technically testable.
 
-None of those are defensible until Archis has real professional data and evidence.
+## Competitive kill test
 
-## Positioning sentence
+Archis should be reconsidered or radically repositioned if a current product can already demonstrate all of the following in ordinary practice:
 
-**Archis is an intent-preserving revision layer for architecture: the architect authors the design, Archis helps it survive change.**
+1. begin with the architect’s authored plan rather than a blank generative brief,
+2. infer important spatial/design relationships without requiring all of them to be manually encoded,
+3. expose confidence/uncertainty and let the architect correct the inferred intent,
+4. accept a requested design change,
+5. generate minimal-change alternatives conditioned on confirmed intent,
+6. explain semantic consequences and what was preserved/damaged,
+7. learn project priorities from subsequent architect corrections.
 
-## Questions every pitch should survive
-
-**Isn't this BIM?** BIM coordinates building information. Archis's experiment is about inferring and preserving architect-confirmed intent under change. The underlying semantic model is infrastructure, not the novelty claim.
-
-**Why not Snaptrude / Finch / Forma?** They validate that connected, generative and constraint-aware architectural software matters. Archis is deliberately testing a narrower interaction: start from this architect's authored solution and minimize semantic damage when requirements change.
-
-**Why not a plugin?** It may become one. The research engine should be separable from the authoring shell.
-
-**Why AI?** AI is useful where intent is fuzzy and difficult to encode manually. Deterministic geometry and constraints remain authoritative. The system should ask when uncertain rather than hallucinate certainty.
-
-**What is proprietary today?** Nothing defensible yet. The prototype is an experiment designed to discover whether an intent-preservation engine and the data created through architect correction are worth building into a moat.
+If that workflow is already solved well, “we have a nicer interface” is not enough.
