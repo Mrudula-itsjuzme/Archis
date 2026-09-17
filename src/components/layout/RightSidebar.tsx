@@ -6,6 +6,8 @@ import ChangeLedger from '../ui/ChangeLedger';
 import IntentPanel from '../ui/IntentPanel';
 import type { Recommendation } from '../../store/gemini';
 
+
+
 const CATEGORY_ICON: Record<string, string> = {
   circulation: '↔',
   area: '⬜',
@@ -15,13 +17,13 @@ const CATEGORY_ICON: Record<string, string> = {
   efficiency: '⚡',
 };
 
-const PRIORITY_COLOR: Record<string, string> = {
+const IMPACT_COLOR: Record<string, string> = {
   high: 'border-red-200 bg-red-50',
   medium: 'border-orange-200 bg-orange-50',
   low: 'border-blue-100 bg-blue-50',
 };
 
-const PRIORITY_BADGE: Record<string, string> = {
+const IMPACT_BADGE: Record<string, string> = {
   high: 'bg-red-100 text-red-700',
   medium: 'bg-orange-100 text-orange-700',
   low: 'bg-blue-100 text-blue-700',
@@ -32,16 +34,16 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className={`rounded-xl border p-3 flex flex-col gap-2 ${PRIORITY_COLOR[rec.priority] || 'border-gray-100 bg-white'}`}>
+    <div className={`rounded-xl border p-3 flex flex-col gap-2 ${IMPACT_COLOR[rec.impact] || 'border-gray-100 bg-white'}`}>
       <div className="flex items-start gap-2">
         <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-base shrink-0 shadow-sm">
-          {CATEGORY_ICON[rec.category] || '◈'}
+          {CATEGORY_ICON['optimization'] || '◈'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-bold text-gray-800 leading-snug">{rec.title}</span>
-            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${PRIORITY_BADGE[rec.priority]}`}>
-              {rec.priority}
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${IMPACT_BADGE[rec.impact]}`}>
+              {rec.impact}
             </span>
           </div>
           <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{rec.description}</p>
@@ -66,8 +68,8 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
                     {c.type === 'resize' ? '⬜ size' : c.type === 'move' ? '↕ move' : '✎ edit'}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-semibold text-gray-700 truncate">{c.spaceName}</div>
-                    <div className="text-[10px] text-gray-400">{c.reason}</div>
+                    <div className="text-[11px] font-semibold text-gray-700 truncate">{c.spaceId}</div>
+                    <div className="text-[10px] text-gray-400">{rec.description}</div>
                     {c.type === 'resize' && (c.newWidth || c.newHeight) && (
                       <div className="text-[10px] text-blue-600 font-mono mt-0.5">
                         → {c.newWidth?.toFixed(1)}m × {c.newHeight?.toFixed(1)}m

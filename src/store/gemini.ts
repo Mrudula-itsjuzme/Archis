@@ -1,17 +1,18 @@
 import { Space } from '../models/types';
 
 export interface RecommendationChange {
-  roomId: string;
+  spaceId: string;
   type: 'resize' | 'move' | 'rename' | 'retype';
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
-  name?: string;
-  roomType?: string;
+  newWidth?: number;
+  newHeight?: number;
+  newX?: number;
+  newY?: number;
+  newName?: string;
+  newRoomType?: string;
 }
 
 export interface Recommendation {
+  id: string;
   title: string;
   description: string;
   impact: 'high' | 'medium' | 'low';

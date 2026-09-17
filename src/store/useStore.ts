@@ -4,6 +4,13 @@ import { initialModel, courtyardHouseProject, apartmentFloorProject, schoolWingP
 import type { Recommendation } from './gemini';
 
 interface StoreState {
+  user: any;
+  setUser: (user: any) => void;
+  savedProjects: any[];
+  fetchSavedProjects: () => Promise<void>;
+  saveCurrentProject: () => Promise<void>;
+  loadSavedProject: (id: string) => Promise<void>;
+
   model: SemanticModel;
   originalModel: SemanticModel;
   
@@ -82,7 +89,70 @@ const syncLegacyFields = (model: SemanticModel): SemanticModel => {
   return newModel;
 };
 
-export const useStore = create<StoreState>((set) => ({
+export const useStore = create<StoreState>((set, get) => ({
+  user: null,
+  setUser: (user) => {
+    set({ user });
+    if (user) get().fetchSavedProjects();
+  },
+  savedProjects: [],
+  fetchSavedProjects: async () => {
+    const user = get().user;
+    if (!user) return;
+    try {
+      const { db } = await import("../lib/firebase");
+      const { collection, getDocs, query, where } = await import("firebase/firestore");
+      const q = query(collection(db, "projects"), where("userId", "==", user.uid));
+      const snapshot = await getDocs(q);
+      const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      set({ savedProjects: projects });
+    } catch (e) { console.error("Error fetching projects:", e); }
+  },
+  saveCurrentProject: async () => {
+    const state = get();
+    if (!state.user) return alert("Please sign in to save projects");
+    try {
+      const { db } = await import("../lib/firebase");
+      const { collection, addDoc, updateDoc, doc, serverTimestamp } = await import("firebase/firestore");
+      const projectData = {
+        userId: state.user.uid,
+        model: state.model,
+        blueprintUrl: state.blueprintUrl,
+        updatedAt: serverTimestamp()
+      };
+      if (state.model.project.id && state.model.project.id.length > 10) {
+        await updateDoc(doc(db, "projects", state.model.project.id), projectData);
+      } else {
+        const docRef = await addDoc(collection(db, "projects"), {
+          ...projectData,
+          name: state.model.project.name || "Untitled Project",
+          createdAt: serverTimestamp()
+        });
+        set(s => ({ model: { ...s.model, project: { ...s.model.project, id: docRef.id } } }));
+      }
+      get().fetchSavedProjects();
+      alert("Project saved!");
+    } catch (e) { console.error("Error saving:", e); alert("Failed to save project"); }
+  },
+  loadSavedProject: async (id: string) => {
+    try {
+      const { db } = await import("../lib/firebase");
+      const { doc, getDoc } = await import("firebase/firestore");
+      const docRef = doc(db, "projects", id);
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        set({
+          model: { ...data.model, project: { ...data.model.project, id } },
+          blueprintUrl: data.blueprintUrl,
+          workspaceMode: "plan",
+          activeLevelId: null,
+          selectedSpaceId: null,
+        });
+      }
+    } catch (e) { console.error("Error loading:", e); }
+  },
+
   model: JSON.parse(JSON.stringify(initialModel)),
   originalModel: initialModel,
   
