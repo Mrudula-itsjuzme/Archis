@@ -75,6 +75,11 @@ interface StoreState {
   loadProject: (project: Project) => void;
   updateSpacePosition: (id: string, x: number, y: number) => void;
   updateSpaceDimensions: (id: string, width: number, height: number) => void;
+  moveVertex: (vertexId: string, x: number, y: number) => void;
+  selectedVertexId: string | null;
+  setSelectedVertexId: (id: string | null) => void;
+  editorMode: 'select' | 'draw' | 'door' | 'window';
+  setEditorMode: (mode: 'select' | 'draw' | 'door' | 'window') => void;
   resetModel: () => void;
   applyVariant: (variantModel: SemanticModel, variantType: VariantType) => void;
 }
@@ -167,6 +172,10 @@ export const useStore = create<StoreState>((set, get) => ({
   hoveredSpaceId: null,
   setSelectedSpaceId: (id) => set({ selectedSpaceId: id }),
   setHoveredSpaceId: (id) => set({ hoveredSpaceId: id }),
+  selectedVertexId: null,
+  setSelectedVertexId: (id) => set({ selectedVertexId: id }),
+  editorMode: 'select' as 'select' | 'draw' | 'door' | 'window',
+  setEditorMode: (mode) => set({ editorMode: mode }),
 
   clientViewMode: false,
   isDragging3D: false,
@@ -390,6 +399,40 @@ export const useStore = create<StoreState>((set, get) => ({
       }
     }
     return { model: syncLegacyFields(newModel) };
+  }),
+
+  moveVertex: (vertexId, nx, ny) => set((state) => {
+    if (!state.model.vertices) return {};
+    // Snap to 0.25m grid
+    const x = Math.round(nx * 4) / 4;
+    const y = Math.round(ny * 4) / 4;
+
+    const newVertices = state.model.vertices.map(v =>
+      v.id === vertexId ? { ...v, x, y } : v
+    );
+    const vertexById = new Map(newVertices.map(v => [v.id, v]));
+
+    // Recalculate each room's bbox from its vertices array
+    const newRooms = state.model.rooms.map(room => {
+      if (!room.vertices || room.vertices.length === 0) return room;
+      const pts = room.vertices.map((vid: string) => vertexById.get(vid)!).filter(Boolean);
+      if (pts.length === 0) return room;
+      const minX = Math.min(...pts.map((p: any) => p.x));
+      const minY = Math.min(...pts.map((p: any) => p.y));
+      const maxX = Math.max(...pts.map((p: any) => p.x));
+      const maxY = Math.max(...pts.map((p: any) => p.y));
+      const newWidth = Math.max(0.5, maxX - minX);
+      const newHeight = Math.max(0.5, maxY - minY);
+      return { ...room, x: minX, y: minY, width: newWidth, height: newHeight };
+    });
+
+    return {
+      model: {
+        ...state.model,
+        vertices: newVertices,
+        rooms: newRooms,
+      }
+    };
   }),
 
   resetModel: () => set((state) => ({ 

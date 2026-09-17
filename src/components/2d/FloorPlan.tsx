@@ -1,6 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import Room2D from './Room2D';
+import WallLayer from './WallLayer';
 
 interface FloorPlanProps {
   view?: 'original' | 'overlay' | 'clean';
@@ -208,6 +209,11 @@ export default function FloorPlan({ view = 'clean' }: FloorPlanProps) {
         {showRooms && model.rooms.map(room => (
           <Room2D key={room.id} room={room} scale={SCALE} offsetX={OFFSET_X} offsetY={OFFSET_Y} containerRef={containerRef} />
         ))}
+
+        {/* Wall Layer (Vertices & Edges) */}
+        {showRooms && (
+          <WallLayer scale={SCALE} offsetX={OFFSET_X} offsetY={OFFSET_Y} />
+        )}
 
         {/* Variant preview ghost */}
         {showRooms && previewVariantModel && previewVariantModel.rooms.map(room => (
