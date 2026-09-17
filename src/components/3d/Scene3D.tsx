@@ -4,6 +4,7 @@ import { OrbitControls, Grid, Environment, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
 import Room3D from './Room3D';
+import Exporter from './Exporter';
 
 function CameraRig({ centerX, centerY, size, view }: { centerX: number; centerY: number; size: number; view: string }) {
   const { camera } = useThree();
@@ -90,6 +91,7 @@ export default function Scene3D() {
 
       <Canvas shadows camera={{ fov: 40 }} frameloop="demand">
         <Suspense fallback={null}>
+          <Exporter />
           <SceneContent cameraView={cameraView} />
         </Suspense>
       </Canvas>

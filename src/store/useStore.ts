@@ -22,6 +22,8 @@ interface StoreState {
   isDragging3D: boolean;
   setIsDragging3D: (isDragging: boolean) => void;
   isExtracting: boolean;
+  triggerExport3D: boolean;
+  setTriggerExport3D: (trigger: boolean) => void;
   extractBlueprint: () => Promise<void>;
   setClientViewMode: (enabled: boolean) => void;
 
@@ -182,6 +184,8 @@ export const useStore = create<StoreState>((set, get) => ({
   blueprintOffsetY: 100,
   blueprintLocked: false,
   isExtracting: false,
+  triggerExport3D: false,
+  setTriggerExport3D: (t) => set({ triggerExport3D: t }),
   recommendations: [],
   isLoadingRecommendations: false,
 
