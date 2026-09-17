@@ -4,6 +4,7 @@ import { evaluateAllConstraints } from '../../engine/constraints';
 import VariantExplorer from '../ui/VariantExplorer';
 import ChangeLedger from '../ui/ChangeLedger';
 import IntentPanel from '../ui/IntentPanel';
+import SpacePropertiesPanel from '../ui/SpacePropertiesPanel';
 import type { Recommendation } from '../../store/gemini';
 
 
@@ -150,6 +151,7 @@ export default function RightSidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <SpacePropertiesPanel />
         {activeTab === 'insights' && (
           <>
             {/* Status card */}

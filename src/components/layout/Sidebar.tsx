@@ -150,18 +150,44 @@ export default function Sidebar() {
           {/* Tools */}
           <div>
             <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2 px-1">Tools</div>
-            <div className="flex flex-col gap-0.5">
-              {[
-                { label: 'Blueprint Alignment', icon: '⊞' },
-                { label: 'Manual Corrections', icon: '✎' },
-                { label: 'Measurement Tools', icon: '⟺' },
-              ].map(t => (
-                <button key={t.label} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors font-medium">
-                  <span className="text-base leading-none">{t.icon}</span>
-                  {t.label}
-                </button>
-              ))}
-            </div>
+            
+          <div className="flex flex-col gap-0.5">
+            <button 
+              onClick={() => {
+                useStore.setState(state => {
+                  const newRoom = {
+                    id: 'room-' + Date.now(),
+                    name: 'New Room',
+                    type: 'office' as any,
+                    shape: 'rect',
+                    x: 5,
+                    y: 5,
+                    width: 4,
+                    height: 4,
+                    isLocked: false
+                  };
+                  return { 
+                    model: { ...state.model, rooms: [...state.model.rooms, newRoom] },
+                    selectedSpaceId: newRoom.id 
+                  };
+                });
+              }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-indigo-600 hover:bg-indigo-50 font-semibold transition-colors"
+            >
+              <span className="text-base leading-none">＋</span>
+              Add Space
+            </button>
+            {[
+              { label: 'Blueprint Alignment', icon: '⊞' },
+              { label: 'Measurement Tools', icon: '⟺' },
+            ].map(t => (
+              <button key={t.label} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors font-medium">
+                <span className="text-base leading-none">{t.icon}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           </div>
 
           {/* Spaces list */}
