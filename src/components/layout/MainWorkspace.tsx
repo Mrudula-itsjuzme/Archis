@@ -16,6 +16,10 @@ export default function MainWorkspace() {
   const setWorkspaceMode = useStore(state => state.setWorkspaceMode);
   const semanticOverlay = useStore(state => state.semanticOverlay);
   const isExtracting = useStore(state => state.isExtracting);
+  const blueprintOpacity = useStore(state => state.blueprintOpacity);
+  const setBlueprintConfig = useStore(state => state.setBlueprintConfig);
+  const calibrationMode = useStore(state => state.calibrationMode);
+  const setCalibrationMode = useStore(state => state.setCalibrationMode);
   const rooms = useStore(state => state.model.rooms);
   const blueprintUrl = useStore(state => state.blueprintUrl);
 
@@ -102,6 +106,7 @@ export default function MainWorkspace() {
             {/* 2D panel header */}
             <div className="h-10 flex items-center justify-between px-4 bg-white border-b border-gray-100 shrink-0">
               <span className="text-xs font-semibold text-gray-700">2D Plan (Reconstructed)</span>
+              
               <div className="flex bg-gray-100 rounded-lg p-0.5">
                 {[
                   { key: 'original', label: 'Original Blueprint' },
@@ -117,6 +122,32 @@ export default function MainWorkspace() {
                   </button>
                 ))}
               </div>
+              
+              {plan2dTab === 'overlay' && (
+                <>
+                <div className="flex items-center gap-2 px-2 border-l border-gray-200">
+                  <span className="text-[10px] text-gray-500 font-semibold uppercase">Opacity</span>
+                  <input 
+                    type="range" 
+                    min="0" max="1" step="0.05" 
+                    value={blueprintOpacity} 
+                    onChange={e => setBlueprintConfig({ opacity: parseFloat(e.target.value) })}
+                    className="w-20"
+                  />
+                </div>
+                <div className="flex items-center gap-2 px-2 border-l border-gray-200">
+                  <button 
+                    onClick={() => setCalibrationMode(calibrationMode === 'idle' ? 'step1' : 'idle')}
+                    className={`text-[10px] font-semibold px-2 py-1 rounded ${calibrationMode !== 'idle' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                  >
+                    {calibrationMode !== 'idle' ? 'Cancel Calibration' : '📏 Calibrate Scale'}
+                  </button>
+                  {calibrationMode === 'step1' && <span className="text-[10px] text-red-600 font-medium">Click 1st point</span>}
+                  {calibrationMode === 'step2' && <span className="text-[10px] text-red-600 font-medium">Click 2nd point</span>}
+                </div>
+                </>
+              )}
+
               {/* Scale bar + expand */}
               <div className="flex items-center gap-2 text-[10px] text-gray-400">
                 <span>100%</span>

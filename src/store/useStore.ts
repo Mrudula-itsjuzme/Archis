@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SemanticModel, Space, VariantType, ChangeEvent, Project } from '../models/types';
+import { migrateRectanglesToGraph } from '../utils/geometryGraph';
 import { initialModel, courtyardHouseProject, apartmentFloorProject, schoolWingProject } from './initialData';
 import type { Recommendation } from './gemini';
 
@@ -47,6 +48,9 @@ interface StoreState {
   // Blueprint
   blueprintUrl: string | null;
   blueprintOpacity: number;
+  calibrationMode: 'idle' | 'step1' | 'step2';
+  calibrationPt1: {x: number, y: number} | null;
+  setCalibrationMode: (mode: 'idle' | 'step1' | 'step2', pt?: {x: number, y: number}) => void;
   blueprintScale: number; // Pixels per meter
   blueprintRotation: number;
   blueprintOffsetX: number;
@@ -145,7 +149,7 @@ export const useStore = create<StoreState>((set, get) => ({
       if (snapshot.exists()) {
         const data = snapshot.data();
         set({
-          model: { ...data.model, project: { ...data.model.project, id } },
+          model: migrateRectanglesToGraph({ ...data.model, project: { ...data.model.project, id } }),
           blueprintUrl: data.blueprintUrl,
           workspaceMode: "plan",
           activeLevelId: null,
@@ -156,7 +160,7 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   model: JSON.parse(JSON.stringify(initialModel)),
-  originalModel: initialModel,
+  originalModel: migrateRectanglesToGraph(initialModel),
   
   activeLevelId: null,
   selectedSpaceId: null,
@@ -183,6 +187,9 @@ export const useStore = create<StoreState>((set, get) => ({
   blueprintOffsetX: 100,
   blueprintOffsetY: 100,
   blueprintLocked: false,
+  calibrationMode: 'idle' as 'idle' | 'step1' | 'step2',
+  calibrationPt1: null as {x: number, y: number} | null,
+  setCalibrationMode: (mode: 'idle' | 'step1' | 'step2', pt?: {x: number, y: number}) => set((s: any) => ({ calibrationMode: mode, calibrationPt1: pt !== undefined ? pt : s.calibrationPt1 })),
   isExtracting: false,
   triggerExport3D: false,
   setTriggerExport3D: (t) => set({ triggerExport3D: t }),
@@ -251,22 +258,33 @@ export const useStore = create<StoreState>((set, get) => ({
 
     if (apiKey && isDataUrl) {
       try {
-        const { extractRoomsWithGemini } = await import('./gemini');
-        const extractedRooms = await extractRoomsWithGemini(blueprintUrl, apiKey);
+        const { extractBlueprintWithGemini } = await import('./gemini');
+        const extraction = await extractBlueprintWithGemini(blueprintUrl, apiKey);
+        
+        const rooms = extraction.rooms;
         
         set(state => {
-          const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
-          const activeLevel = newModel.project.buildings[0].levels[0]; // Simplification for demo
-          activeLevel.spaces = extractedRooms;
+          const newModel = migrateRectanglesToGraph({
+            ...state.model,
+            rooms,
+            doors: [],
+            // Store extraction metadata on the model for the UI to read
+            extractionMeta: {
+              scale_confidence: extraction.scale_confidence,
+              estimated_scale_note: extraction.estimated_scale_note,
+              overall_confidence: extraction.overall_confidence,
+              building_type: extraction.building_type,
+              undetected_elements: extraction.undetected_elements,
+              notes: extraction.notes,
+              detected_doors: extraction.doors,
+              detected_windows: extraction.windows,
+            }
+          } as any);
           
           return {
             isExtracting: false,
-            recommendations: [], // clear old ones
-            model: {
-              ...newModel,
-              activeLevelId: activeLevel.id,
-              rooms: activeLevel.spaces
-            }
+            recommendations: [],
+            model: newModel,
           };
         });
         // Fetch AI recommendations in the background
@@ -275,7 +293,6 @@ export const useStore = create<StoreState>((set, get) => ({
       } catch (err) {
         console.error("Gemini Extraction failed:", err);
         alert("Real extraction failed. Falling back to simulation. Error: " + (err as Error).message);
-
       }
     }
 

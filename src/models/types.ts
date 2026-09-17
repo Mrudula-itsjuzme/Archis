@@ -1,7 +1,34 @@
 export type SpaceType = 'living' | 'kitchen' | 'bedroom' | 'bathroom' | 'circulation' | 'office' | 'classroom' | 'lab' | 'corridor' | 'courtyard' | 'stair' | 'retail' | 'utility' | 'lobby' | 'outdoor';
 export type FurnitureType = 'bed' | 'sofa' | 'table' | 'counter' | 'toilet' | 'bathtub' | 'desk';
 
+
+export interface Vertex {
+  id: string;
+  x: number;
+  y: number;
+}
+
+export interface Wall {
+  id: string;
+  startVertexId: string;
+  endVertexId: string;
+  thickness: number;
+  isExterior: boolean;
+}
+
+export interface Opening {
+  id: string;
+  wallId: string;
+  distanceAlongWall: number; // absolute distance from startVertex
+  width: number;
+  height: number;
+  elevation: number; // height from floor
+  type: 'door' | 'window' | 'entrance';
+}
+
 export interface Space {
+  wallIds?: string[]; // IDs of walls forming this space
+  vertices?: string[]; // Ordered IDs of vertices forming the polygon
   id: string;
   name: string;
   type: SpaceType;
@@ -56,6 +83,10 @@ export interface Project {
 }
 
 export interface SemanticModel {
+  vertices?: Vertex[];
+  walls?: Wall[];
+  openings?: Opening[];
+  scale?: number; // pixels per meter
   project: Project;
   activeLevelId: string;
   

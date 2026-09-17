@@ -17,6 +17,9 @@ export default function FloorPlan({ view = 'clean' }: FloorPlanProps) {
   const bpOffsetY = useStore(state => state.blueprintOffsetY);
   const locked = useStore(state => state.blueprintLocked);
   const setBlueprintConfig = useStore(state => state.setBlueprintConfig);
+  const calibrationMode = useStore(s => s.calibrationMode);
+  const calibrationPt1 = useStore(s => s.calibrationPt1);
+  const setCalibrationMode = useStore(s => s.setCalibrationMode);
 
   const SCALE = 40;
   const OFFSET_X = 60;
@@ -31,6 +34,33 @@ export default function FloorPlan({ view = 'clean' }: FloorPlanProps) {
   const panStart = useRef({ x: 0, y: 0, tx: 0, ty: 0 });
   const zoomDisplay = useRef<HTMLDivElement>(null);
   const rafId = useRef<number>(0);
+
+  
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (calibrationMode === 'idle') return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    // Calculate raw canvas coordinates
+    const x = (e.clientX - rect.left) / scaleRef.current;
+    const y = (e.clientY - rect.top) / scaleRef.current;
+
+    if (calibrationMode === 'step1') {
+      setCalibrationMode('step2', { x, y });
+    } else if (calibrationMode === 'step2' && calibrationPt1) {
+      const distPx = Math.sqrt(Math.pow(x - calibrationPt1.x, 2) + Math.pow(y - calibrationPt1.y, 2));
+      const distMetersStr = prompt(`Distance in pixels: ${Math.round(distPx)}\nEnter the real-world distance in meters:`, "1.0");
+      if (distMetersStr) {
+        const distM = parseFloat(distMetersStr);
+        if (!isNaN(distM) && distM > 0) {
+          const newScale = distPx / distM;
+          setBlueprintConfig({ scale: newScale });
+          alert(`Scale calibrated to ${Math.round(newScale)} pixels per meter.`);
+        }
+      }
+      setCalibrationMode('idle');
+    }
+  };
 
   const applyTransform = useCallback(() => {
     if (canvasRef.current) {
@@ -115,6 +145,7 @@ export default function FloorPlan({ view = 'clean' }: FloorPlanProps) {
       onPointerMove={handleCanvasPointerMove}
       onPointerUp={handleCanvasPointerUp}
       onPointerCancel={handleCanvasPointerUp}
+      onClick={handleCanvasClick}
     >
       {/* Zoom buttons */}
       <div className="absolute top-3 right-3 flex flex-col gap-1 z-30 pointer-events-auto">
@@ -187,6 +218,12 @@ export default function FloorPlan({ view = 'clean' }: FloorPlanProps) {
           />
         ))}
       </div>
+
+      
+        {/* Calibration Markers */}
+        {calibrationMode !== 'idle' && calibrationPt1 && (
+          <div className="absolute w-3 h-3 bg-red-500 rounded-full -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none" style={{ left: calibrationPt1.x, top: calibrationPt1.y }} />
+        )}
 
       {/* Zoom % label */}
       <div ref={zoomDisplay} className="absolute bottom-3 right-3 bg-white border border-gray-200 rounded px-2 py-0.5 text-[10px] text-gray-500 shadow-sm pointer-events-none z-20">
