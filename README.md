@@ -134,7 +134,7 @@ The remaining question Archis cares about is not “can the machine make more op
 
 That is still a hypothesis, not a solved claim.
 
-See [`docs/RESEARCH_THESIS.md`](docs/RESEARCH_THESIS.md) for the competitive and research framing.
+See [`docs/research/RESEARCH_THESIS.md`](docs/research/RESEARCH_THESIS.md) for the competitive and research framing.
 
 ---
 
@@ -428,6 +428,6 @@ The thesis is intentionally framed against what exists today rather than pretend
 - [Autodesk Forma Building Layout Explorer](https://adsknews.autodesk.com/en/news/building-layout-explorer-in-autodesk-forma/)
 - [HouseMind, CVPR 2026: understanding, generating and editing floor plans](https://openaccess.thecvf.com/content/CVPR2026/html/Qin_Tokenization_Allows_Multimodal_Large_Language_Models_to_Understand_Generate_and_CVPR_2026_paper.html)
 
-A deeper framing and falsifiable research plan lives in [`docs/RESEARCH_THESIS.md`](docs/RESEARCH_THESIS.md).
+A deeper framing and falsifiable research plan lives in [`docs/research/RESEARCH_THESIS.md`](docs/research/RESEARCH_THESIS.md).
 
 <sub>Archis is an active prototype. Current implementation, research hypotheses, and future product direction are deliberately separated throughout this README.</sub>
