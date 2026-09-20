@@ -1,13 +1,21 @@
 # Contributing to Archis
 
-Thanks for helping. Archis is an active research prototype: an architect-authored design goes in, and the software tries to preserve the architect's intent through later changes. Read the [README](README.md) and [`docs/RESEARCH_THESIS.md`](docs/RESEARCH_THESIS.md) first so your change fits the thesis.
+Archis is being developed as a real multi-contributor architecture product with active research inside it. Before making a substantial change, read:
+
+- [README](README.md)
+- [Product direction](docs/PRODUCT_DIRECTION.md)
+- [Research thesis](docs/research/RESEARCH_THESIS.md)
+- [Technical architecture](docs/engineering/TECHNICAL_ARCHITECTURE.md)
 
 ## Ground rules
 
-- **Architect stays the authority.** Features should surface uncertainty and ask, not silently decide.
-- **Keep deterministic logic verifiable.** Geometry, constraints and variants in `src/engine` are deterministic TypeScript. Do not replace them with opaque or random behaviour.
-- **Separate fact from hypothesis.** Do not label something as "inferred intent" unless the code really infers it. Docs and UI copy must match what is implemented.
-- **Small, focused changes.** One concern per pull request.
+- **Architect stays authoritative.** AI may interpret, propose, rank, and explain. It must not silently decide material design changes.
+- **The canonical building state is the source of truth.** Do not create competing 2D/3D geometry states.
+- **Keep deterministic logic verifiable.** Geometry, hard constraints, patch application, and validation belong in deterministic/testable code where possible.
+- **Separate fact from hypothesis.** Inferred intent, AI extraction, heuristics, and unvalidated metrics must be labeled honestly.
+- **Prefer reviewable patches to whole-design replacement.** Changes should be inspectable, editable, rejectable, and eventually reversible/versioned.
+- **Preserve provenance.** We should know whether a relationship came from the architect, an import, a rule, analysis, or inference.
+- **Small, focused PRs.** One coherent concern per pull request.
 
 ## Getting started
 
@@ -20,94 +28,143 @@ npm ci
 npm run dev
 ```
 
-The dev server is Vite; it prints the local URL on start.
+The Vite dev server prints the local URL.
 
-### Environment variables
+## Environment variables
 
-Create a `.env` file in the project root. It is git-ignored; never commit secrets.
+Create a `.env` file in the repository root. Never commit secrets.
 
 | Variable | Purpose |
 | --- | --- |
-| `VITE_GEMINI_API_KEY` | Gemini key used for AI floor-plan extraction and recommendations |
-| `GEMINI_API_KEY` | Same key, read server-side by the serverless functions in `api/` |
+| `VITE_GEMINI_API_KEY` | legacy/client-facing Gemini configuration where still referenced |
+| `GEMINI_API_KEY` | server-side key used by Vercel API routes |
 
-The app runs without a key, but AI features will not work. Firebase config lives in `src/lib/firebase.ts`.
+AI features may degrade or fail without the required server-side key. Firebase configuration currently lives in `src/lib/firebase.ts`.
 
 ## Project layout
 
 ```text
-api/                serverless functions (extract.ts, recommendations.ts) that call Gemini
-docs/               thesis, pitch, validation plan, architecture notes
-src/components/2d   2D plan workspace (SVG walls, vertices, blueprint overlay)
-src/components/3d   Three.js / React Three Fiber viewer
-src/components/ui   shared UI pieces
-src/components/layout   app shell, header, sidebars
-src/engine          constraints, variants, intent, change requests
-src/models          shared types (types.ts)
-src/store           Zustand store, initial data, Gemini client
-src/utils           geometry graph, SVG export
-src/lib             Firebase setup
+api/                    serverless provider adapters
+docs/                   product, research, validation, architecture
+src/components/2d       2D editing / blueprint interaction
+src/components/3d       Three.js / React Three Fiber view
+src/components/ui       product UI and inspectors
+src/components/layout   application shell
+src/engine              deterministic constraints, intent, variants, change logic
+src/models              shared domain types
+src/store               app orchestration/state
+src/utils               geometry/export helpers
+src/lib                 provider setup such as Firebase
+scripts/patches         historical one-off patch scripts; do not extend
 ```
 
-The shared semantic model in the store is the single source of truth. 2D and 3D views read from it; they must not hold competing copies of geometry.
+The direction is to keep domain/engine code independent from UI and provider-specific infrastructure.
 
 ## Development workflow
 
-1. Sync `main`: `git pull origin main`.
-2. Branch from it: `git checkout -b feat/short-description`.
-3. Make your change.
-4. Verify before pushing:
+1. Update `main`.
+2. Create a focused branch such as `feat/change-impact-panel` or `fix/door-topology`.
+3. Make the smallest coherent change.
+4. Run:
    ```bash
+   npm ci
    npm run build
    ```
-   `build` runs `tsc` then `vite build`. It must pass with no type errors. There is no test or lint script yet; if you add logic to `src/engine`, please include tests or at least a clear manual verification note in the PR.
-5. Manually exercise the affected flow in `npm run dev` (2D edit, 3D view, constraint messages, variants, export as relevant).
-6. Open a pull request against `main`.
+5. Manually exercise the affected workflow.
+6. Add tests when introducing or changing deterministic engine behavior.
+7. Open a PR against `main`.
+8. Respond to review comments; do not merge around unresolved concerns.
 
-## Commit messages
-
-Follow the existing [Conventional Commits](https://www.conventionalcommits.org/) style seen in the history:
-
-```text
-feat(phase4): render walls as SVG lines with thickness and vertices
-fix: make constraints engine dynamic and remove hardcoded residential rules
-docs: add architect interview guide
-chore: add firebase dependency
-```
-
-Types: `feat`, `fix`, `docs`, `chore`, `refactor`. Optional scope in parentheses. Imperative, lowercase subject, no trailing period.
+CI runs the production build for PRs and `main`.
 
 ## Pull requests
 
-Include:
+A useful PR explains:
 
-- What changed and why.
-- How you verified it (build output, manual steps, screenshots or a short clip for UI changes).
-- Any behaviour that is still mocked, random or unimplemented. Be explicit.
+- what changed,
+- why it belongs in the product direction,
+- which domain state it touches,
+- whether behavior is deterministic, heuristic, AI-driven, or user-authored,
+- how it was verified,
+- screenshots/recordings for UI changes,
+- known limitations or follow-up work.
 
-Use [`docs/REVIEW_CHECKLIST.md`](docs/REVIEW_CHECKLIST.md) as a pre-merge guide for larger changes, especially anything touching intent, change requests or candidate previews.
+For architecture-sensitive changes, use [the engineering review checklist](docs/engineering/REVIEW_CHECKLIST.md).
 
-## Code style
+## Commit messages
 
-- TypeScript with strict types; avoid `any`. Put shared types in `src/models/types.ts`.
-- React function components and hooks; state through the Zustand store.
-- Tailwind for styling; use `clsx` / `tailwind-merge` for conditional classes.
-- Match the surrounding code's naming, comment density and formatting.
-- Keep engine code free of UI and store imports so it stays testable.
+Use Conventional Commit-style subjects:
+
+```text
+feat: add reviewable wall-move patch
+fix: preserve opening topology when moving a wall
+docs: update validation protocol
+refactor: isolate persistence adapter
+chore: update dependency workflow
+```
+
+Use `feat`, `fix`, `docs`, `refactor`, `test`, or `chore`.
+
+## Product architecture rules
+
+### Engine vs AI
+
+An LLM may parse “give the kitchen ~3 m² more area” into a structured goal.
+
+It should not directly become the final geometry mutation.
+
+Preferred flow:
+
+```text
+language / image
+→ structured interpretation
+→ deterministic candidate operation
+→ geometry + constraint validation
+→ impact analysis
+→ architect review
+```
+
+### Intent
+
+Never write UI or docs copy that says “Archis knows” an inferred design intention.
+
+Use language such as:
+
+- hypothesis,
+- likely relationship,
+- inferred preference,
+- confidence,
+- architect-confirmed.
+
+### Versioning
+
+New editing work should be designed so it can eventually be represented as an explicit patch/delta with provenance. Avoid irreversible hidden mutations.
 
 ## Please do not
 
-- Commit `.env`, API keys or Firebase secrets.
-- Commit one-off patch scripts (`patch_*.cjs`, `fix_*.cjs`). Make the edit in source directly.
-- Commit `node_modules`, `dist` or `.vite` output.
-- Make unvalidated claims about market fit or architect demand in docs.
+- commit `.env`, API keys, tokens, or private project data,
+- commit `node_modules`, `dist`, or `.vite`,
+- add new one-off patch scripts,
+- put domain logic only inside React components,
+- duplicate geometry state between views,
+- bypass deterministic checks because an AI response “looks right,”
+- make unvalidated market/research claims,
+- expand into unrelated AI features because they demo well.
 
-## Reporting issues and ideas
+## Research contributions
 
-Open a GitHub issue with:
+For interviews, real design/revision data, or experiments, read:
 
-- What you expected vs. what happened.
-- Steps to reproduce, plus browser and OS.
-- Console errors if any.
+- [Validation plan](docs/research/VALIDATION_PLAN.md)
+- [Architect interview guide](docs/research/ARCHITECT_INTERVIEW.md)
+- [Research thesis](docs/research/RESEARCH_THESIS.md)
 
-For research contributions such as real first-draft → revision pairs, annotation of deliberate vs. incidental relationships or architect interviews, see [`docs/VALIDATION_PLAN.md`](docs/VALIDATION_PLAN.md) and [`docs/ARCHITECT_INTERVIEW.md`](docs/ARCHITECT_INTERVIEW.md). Only share real plans with the owner's permission.
+Only use real project material with permission and appropriate anonymization.
+
+## The simplest decision test
+
+Before building a feature, ask:
+
+> Does this improve Archis's ability to carry one architect-authored project state through change, review, and continuation?
+
+If not, it probably does not belong in the core product yet.
