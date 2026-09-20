@@ -1,113 +1,311 @@
 # Archis Technical Architecture
 
-## Principle
+## Product architecture principle
 
-The building is the source of truth. 2D, 3D, constraints, intent hypotheses and alternatives are projections or reasoning layers over that model.
+**The canonical building state is the source of truth.**
+
+2D, 3D, AI interpretations, constraints, intent, change proposals, exports, and project history are views or reasoning layers over that state.
+
+No UI surface or model response should become a competing source of geometry.
 
 ```text
-architect-authored draft
-        ↓
-semantic building graph
-        ├── geometry
-        ├── topology / relationships
-        ├── hard constraints
-        └── intent hypotheses
-                ↓
-        architect confirms / corrects
-                ↓
-          protected intent model
-                ↓
-             change request
-                ↓
-      candidate transformation engine
-                ↓
-    constraint + semantic-distance scoring
-                ↓
-        impact explanation / comparison
-                ↓
-           architect decision
+architect input / imported draft
+          ↓
+canonical semantic + versioned building state
+          ├── geometry graph
+          ├── spaces / openings / objects
+          ├── topology / relationships
+          ├── hard constraints
+          ├── project metadata
+          └── provenance
+          ↓
+reasoning layers
+          ├── intent hypotheses
+          ├── AI extraction / interpretation
+          ├── deterministic analyses
+          └── recommendations
+          ↓
+change request / direct edit
+          ↓
+candidate patch engine
+          ↓
+validation + semantic impact
+          ↓
+reviewable diff
+          ↓
+accept / edit / reject / revert
+          ↓
+new project version
 ```
 
-## 1. Semantic building model
+## 1. Canonical semantic model
 
-Current MVP entities are intentionally simple: project, building, level, space, door and furniture. The engine should progressively move walls, openings and richer topology into first-class entities rather than burying them inside view code.
+The product should evolve toward explicit first-class entities for:
 
-## 2. Intent model
+- project,
+- building,
+- level,
+- space,
+- wall,
+- opening,
+- door/window,
+- furniture/object,
+- geometry vertices/edges,
+- semantic relationships,
+- constraints,
+- versions / revisions.
 
-An `IntentHypothesis` contains a kind, strength, confidence, involved entities, rationale and architect decision.
+The current code already contains shared semantic state, room/space structures, geometry graph work, and linked 2D/3D behavior.
 
-The confidence means `Archis thinks this may matter`, not `this is architectural truth`.
+### Rule
 
-States:
+A change to geometry should flow through the canonical model and then be reflected in every view.
 
-- `UNREVIEWED`: system hypothesis
-- `PROTECT`: architect says preserve this during the requested change
-- `IGNORE`: architect says this relationship is incidental for the current task
+Do not patch 2D and 3D separately.
 
-Later we can add architect-authored/rephrased intent rather than forcing every idea into system-generated labels.
+## 2. Geometry and topology engine
 
-## 3. Semantic design distance
+Geometry must remain deterministic and testable.
 
-A candidate is not ranked only by whether it passes constraints.
+Responsibilities include:
+
+- vertex/wall graph operations,
+- snapping/calibration,
+- room boundary reconstruction,
+- adjacency,
+- overlap/intersection checks,
+- opening placement,
+- area/dimension computation,
+- dependency propagation,
+- export conversion.
+
+AI may propose a change. It should not be trusted to perform authoritative geometry mutation without validation.
+
+## 3. Constraint engine
+
+Constraints should be typed and provenance-aware.
+
+```text
+Constraint
+├── kind
+├── target entities
+├── hard | soft
+├── source
+│   ├── architect
+│   ├── brief
+│   ├── imported
+│   ├── code
+│   └── system
+├── evaluator
+└── explanation
+```
+
+Hard constraints should be deterministic wherever possible.
+
+A language model may translate text into a candidate structured constraint, but the constraint engine owns evaluation.
+
+## 4. Intent graph
+
+The current code already contains `IntentHypothesis` structures and heuristic inference.
+
+That is the first implementation of a broader project-intent graph.
+
+Each item should eventually carry:
+
+- involved entities,
+- relationship,
+- strength,
+- confidence,
+- rationale/evidence,
+- provenance,
+- scope,
+- architect decision,
+- version introduced/changed.
+
+Important separation:
+
+```text
+INFERRED ≠ CONFIRMED
+CONFIRMED ≠ HARD CONSTRAINT
+PROJECT PREFERENCE ≠ UNIVERSAL RULE
+```
+
+## 5. AI boundary
+
+AI is useful for:
+
+- blueprint/drawing interpretation,
+- natural-language request parsing,
+- proposing semantic labels,
+- proposing intent hypotheses,
+- ranking candidate patches,
+- explanation,
+- summarizing consequences.
+
+AI should not be the final authority for:
+
+- geometry validity,
+- hard constraints,
+- version state,
+- destructive mutation,
+- professional code compliance.
+
+The current Gemini serverless endpoints are an implementation detail, not the architecture itself. Keep provider-specific code behind service boundaries.
+
+## 6. Change model: patches, not replacement
+
+A requested change should produce one or more explicit operations.
+
+Example:
+
+```text
+Patch
+├── id
+├── base_version
+├── operations[]
+│   ├── move_vertex
+│   ├── move_wall
+│   ├── resize_space
+│   ├── add/remove opening
+│   └── update semantic relation
+├── requested_goal
+├── validation_result
+├── impact_report
+├── provenance
+└── status
+    ├── proposed
+    ├── accepted
+    ├── edited
+    ├── rejected
+    └── reverted
+```
+
+This creates a clean foundation for review, undo, collaboration, and learning from corrections.
+
+## 7. Semantic revision distance
+
+Candidate ranking should not collapse to one opaque “AI score.”
 
 Conceptually:
 
-`D = wg*geometry + wt*topology + wi*intent + wp*performance`
+```text
+distance =
+  geometry delta
++ topology delta
++ protected-intent loss
++ downstream constraint impact
++ selected performance/experience terms
+```
 
-The MVP implements geometry, topology and intent terms. Weights are provisional and must not be presented as scientifically validated.
+Weights must be inspectable and versioned.
 
-This lets Archis ask a different question from blank-slate generation:
+The current deterministic semantic-distance/impact logic is prototype scaffolding and should be treated as provisional.
 
-> Of the valid ways to satisfy this new request, which ones disturb the architect-authored design least?
+## 8. Impact engine
 
-## 4. Change impact
+For every patch, compute a structured diff:
 
-Every candidate should produce a structured report across:
+- geometry changed,
+- spaces affected,
+- topology changed,
+- constraints passed/failed,
+- protected intent preserved/weakened,
+- openings/circulation affected,
+- uncertain interpretive consequences.
 
-- geometry: areas, movement, dimensions
-- relationships: adjacency, reachability, zoning
-- constraints: pass/fail and violations
-- intent: protected ideas strengthened, preserved or weakened
+The UI should show **what happened and why it matters**, not only a red/green validity badge.
 
-The UI should expose consequences rather than simply flashing a red invalid-state badge.
+## 9. Versioning and project memory
 
-## 5. Candidate generation
+Product-scale Archis needs explicit project history.
 
-The current engine is deterministic on purpose. It proves the loop without hiding correctness behind an LLM.
+At minimum:
 
-Next candidate generation should be local and transformation-based:
+```text
+ProjectVersion
+├── parent_version
+├── canonical state snapshot or delta
+├── author
+├── timestamp
+├── accepted patch
+├── architect notes
+└── intent/constraint changes
+```
 
-1. identify entities affected by request
-2. enumerate small legal transformations
-3. propagate dependencies
-4. reject hard-constraint failures
-5. score semantic distance
-6. return a small Pareto-like set of meaningfully different trade-offs
+This is the substrate for:
 
-An LLM may parse a natural-language request into structured goals, but deterministic geometry and constraints remain authoritative.
+- undo/revert,
+- collaboration,
+- decision provenance,
+- comparison,
+- learning from accepted/rejected trade-offs.
 
-## 6. Learning from correction
+Firebase currently provides authentication and persistence for the prototype. Persistence technology can change; version semantics should not depend on Firebase-specific behavior.
 
-A correction is useful evidence only when scoped correctly.
+## 10. Current deployment boundary
 
-We should distinguish:
+The current repository is a React + TypeScript + Vite web application with serverless API routes.
 
-- project-specific intent
-- architect-specific repeated preferences
-- universal constraints / code
+Current stack includes:
 
-Do not casually turn one architect's preference into a global design rule.
+- React 18,
+- TypeScript,
+- Vite,
+- Zustand,
+- Three.js / React Three Fiber,
+- Firebase auth/persistence,
+- serverless Gemini endpoints,
+- deterministic TypeScript geometry/constraint/revision logic.
 
-## 7. Integration wedge
+The longer-term product may become installable/offline-first, especially for professional drawing workflows and private project data. If that happens, the engine should move behind portable interfaces rather than being rewritten around a desktop shell.
 
-Archis should not require a studio to abandon Revit/Archicad/etc. to test the thesis.
+## 11. Interoperability boundary
 
-Initial boundary:
+The first product does not need to replace Revit, Archicad, AutoCAD, Rhino, or SketchUp.
 
-`import / reconstruct early plan → reason and iterate in Archis → approved revision → handoff/export`
+Target flow:
 
-If validation shows architects want the reasoning inside an existing tool, the semantic/intent engine can become an integration rather than forcing a new authoring environment.
+```text
+import / reconstruct
+→ work in canonical Archis state
+→ review revisions
+→ export / handoff
+```
 
-## 8. Trust boundary
+SVG/GLTF exports are current prototype steps. Professional interoperability will eventually need stronger 2D/BIM formats and preservation of semantic/provenance data.
 
-Never phrase inferred intent as fact. Show confidence and rationale. Keep architect decisions visible. Hard constraints and geometry must remain inspectable and deterministic. When the system cannot infer why a relationship exists, asking is better than pretending.
+## 12. Trust and safety rules
+
+- Never present inferred intent as fact.
+- Never hide an AI-driven destructive edit.
+- Keep geometry/constraint validation inspectable.
+- Preserve provenance.
+- Make revert/undo cheap.
+- Prefer asking over inventing when uncertainty is material.
+- Do not silently generalize one architect's preference to everyone.
+- Do not claim professional compliance unless a deterministic compliance module actually verified it.
+
+## 13. Engineering boundaries for contributors
+
+Prefer modules shaped roughly as:
+
+```text
+src/models        domain types
+src/engine        deterministic geometry/constraints/patch logic
+src/services      AI, persistence, import/export adapters
+src/store         application orchestration/state
+src/components    presentation + interaction
+api/              server-side provider adapters
+```
+
+Engine code should avoid direct UI imports and direct provider dependencies.
+
+As the team grows, new features should extend the canonical model and patch/impact flow rather than adding isolated state to whichever component needs it first.
+
+## 14. Architecture success condition
+
+The architecture is working when:
+
+> a contributor can implement a new change operation once, validate it once, and have 2D, 3D, impact analysis, version history, export, and AI reasoning all observe the same resulting state.
+
+If every feature requires synchronizing multiple ad-hoc representations, the architecture is drifting.

@@ -1,98 +1,244 @@
 # Archis Validation Plan
 
-## The thing we are actually testing
+**Status:** active, September 2026  
+**Goal:** validate a real product workflow, not collect compliments about an AI demo.
 
-Archis is not being validated by asking whether architects think an AI architecture product sounds interesting.
+## What we are testing
 
-The hypothesis is narrower:
+The central product hypothesis is:
 
-> Given an architect-authored draft and a requested change, can a system identify relationships the architect considers intentional, let the architect correct those hypotheses, and produce/explain revisions that preserve those relationships better than naive alternatives?
+> Architects lose time and design continuity when an already-authored concept changes, and a semantic, reviewable revision workflow can reduce that cost without taking authority away from the architect.
 
-## Study 0: do architects agree that the problem exists?
+The research hypothesis inside that loop is:
 
-Recruit 5–8 practicing architects. Include at least four who are not family, teammates, or close collaborators.
+> Architect-correctable intent hypotheses can help Archis produce or rank revisions that preserve what mattered better than geometry-only or constraint-only alternatives.
 
-Give each architect one of their own early residential plans and ask them to make a realistic change such as adding 2–3 m² to a kitchen, increasing bedroom privacy, or accommodating a changed client requirement.
+Both hypotheses must survive real project use.
 
-Before they edit, ask them to mark:
+## Validation principles
 
-- things that absolutely cannot change
-- relationships they strongly want to preserve
-- preferences they would trade away if necessary
-- geometry that is merely incidental
+1. **Use real project histories where possible.** A single artificial kitchen-resize demo is useful for engineering, not market validation.
+2. **Observe revision work before pitching Archis.** Learn how architects currently rebuild, reconcile, compare, and communicate changes.
+3. **Separate problem evidence from solution enthusiasm.**
+4. **Measure repeated use.** “Cool idea” is weak evidence. A second real revision is much stronger.
+5. **Capture why a proposal was changed or rejected.** That is the valuable signal.
+6. **Do not train participants into our thesis.** Collect their intent/decision structure before showing Archis labels.
 
-Do not show Archis's inferred labels first. This gives us a reference instead of training the answer into the participant.
+## Stage 0: design-partner interviews
 
-## Study 1: intent inference
+Target the first ~20 serious conversations around real projects rather than generic “would you use AI?” interviews.
 
-Archis receives the same draft without the architect's annotations and produces intent hypotheses with confidence values.
+For each architect, reconstruct one recent change episode:
+
+- What was the original design state?
+- What changed in the brief/client/site/constraints?
+- Which parts of the original design were non-negotiable?
+- Which parts were flexible?
+- What had to be rebuilt or reconciled?
+- Which tools were involved?
+- Where did information get lost between sketch, plan, 3D, client feedback, and BIM?
+- How long did the revision take?
+- What did the architect need to check again?
+- What explanation or diff would have reduced uncertainty?
+
+Record the current workflow, not only opinions.
+
+### Evidence we want
+
+- recurring revision pain,
+- repeated rebuild/reconciliation steps,
+- lost or implicit design rationale,
+- frequent tool/context switching,
+- revisions where “valid” was not the same as “acceptable,”
+- willingness to bring a second real project.
+
+## Stage 1: concierge intent study
+
+Before relying on learned inference, test the interaction manually or with simple heuristics.
+
+For one authored design, ask the architect to identify:
+
+- hard invariants,
+- strong preferences,
+- negotiable preferences,
+- incidental geometry,
+- uncertain relationships.
+
+Then show a small set of Archis hypotheses.
 
 Measure:
 
-- precision of proposed important relationships
-- recall against architect-marked relationships
-- calibration: does 80% confidence actually correspond to roughly 80% confirmation?
-- number of hypotheses the architect protects, ignores, or rewrites
-- time required to correct the intent model
+- confirmed / edited / rejected hypotheses,
+- time to correct the model,
+- whether correction feels easier than restating the design,
+- whether the resulting representation is useful during a later revision.
 
-### Early success criterion
+The goal is not to prove AI accuracy. It is to validate whether an intent layer is worth having.
 
-Do not claim success from a tiny sample. For the prototype, continue only if architects repeatedly confirm that the hypotheses capture useful relationships and correction takes less effort than restating the design from scratch.
+## Stage 2: inference benchmark
 
-## Study 2: minimal-change revision
+Once the interaction is useful, compare:
 
-For each change request, compare:
+A. geometry-only heuristic  
+B. topology/adjacency heuristic  
+C. brief + explicit constraints  
+D. multimodal model  
+E. multimodal model + project history
 
-A. naive geometry/constraint-satisfying edit
-B. Archis edit after intent confirmation
-C. architect's own revision
+Ground truth comes primarily from the author of the plan.
 
-Blind the architect to A/B labels where practical.
+Measure:
 
-Ask:
+- precision / recall,
+- ranking agreement,
+- confidence calibration,
+- correction burden,
+- consistency across repeated review.
 
-1. Does this satisfy the requested change?
-2. Which important ideas from the original survived?
-3. Which were damaged?
-4. Would you continue editing this alternative?
-5. Which explanation was actually useful?
+Avoid publishing a flattering “accuracy” number if the sample is tiny or labels are unstable.
 
-Record hard-constraint satisfaction, semantic design distance, accepted/rejected alternatives, corrections, and time-to-useful-revision.
+## Stage 3: revision comparison
 
-## Study 3: impact explanations
+For each real change request compare:
 
-Show an edit and compare a conventional message such as `Bedroom area changed` against an Archis-style consequence explanation such as `Kitchen expansion is feasible, but this option narrows circulation and weakens the separation between the bedroom wing and social zone.`
+A. constraint-only edit  
+B. geometry-minimizing edit  
+C. intent-aware reviewable patch  
+D. architect's own manual revision
 
-Measure whether the explanation helps the architect identify the trade-off correctly and whether it changes their decision.
+Where practical, blind A/B/C labels.
 
-## Kill criteria
+Measure:
 
-Archis should change direction if repeated testing shows any of these:
+- requested change satisfied,
+- hard constraints preserved,
+- confirmed relationships preserved,
+- amount of manual correction,
+- time to acceptable revision,
+- whether the architect chooses to continue from the candidate,
+- explanation usefulness.
 
-- architects do not recognize stable intent/invariants in early drafts
-- explicitly marking intent is faster than correcting inferred hypotheses
-- minimal-change alternatives are not useful in real revisions
-- semantic impact explanations repeat things architects already see immediately
-- architects overwhelmingly prefer these capabilities inside their existing BIM/CAD environment rather than a separate workspace
+## Stage 4: product-loop pilot
 
-The last result does not kill the engine. It changes the product wedge toward a plugin/integration.
+Run Archis across multiple revision episodes, not one scripted task.
 
-## Data we should keep
+A pilot should include:
 
-With explicit participant permission, retain anonymized pairs of:
+```text
+import/open project
+→ inspect semantic state
+→ correct extraction if needed
+→ make/edit intent decisions
+→ request or perform a change
+→ review patch + impact
+→ accept/edit/reject
+→ save version
+→ reopen later
+→ export/handoff
+```
 
-`original draft → architect intent annotations → change request → generated alternatives → architect decision/correction`
+Track where the user abandons Archis and returns to existing tools. Those exits are product requirements.
 
-This is potentially more valuable than collecting arbitrary floor plans because it captures what changed, what mattered, and why a professional accepted or rejected the change.
+## Metrics that matter
 
-## What not to report yet
+### Problem metrics
 
-Until these studies exist, do not claim:
+- revision frequency,
+- rebuild/reconciliation steps per revision,
+- number of tools touched,
+- time spent re-checking consequences,
+- repeated communication loops.
 
-- Archis understands architectural intent
-- Archis preserves intent better than existing tools
-- architects save X% of iteration time
-- architects prefer Archis
-- the intent model is accurate
+### Product metrics
 
-For now those are hypotheses. The prototype exists to make them falsifiable.
+- successful import / reconstruction rate,
+- correction time,
+- time to first useful revision,
+- accepted / edited / rejected patch ratio,
+- revert rate,
+- successful export / handoff rate,
+- repeated use on another revision/project.
+
+### Research metrics
+
+- intent precision / recall,
+- confidence calibration,
+- semantic-distance agreement with architect judgment,
+- protected-relation preservation,
+- manual correction after candidate generation.
+
+## Study populations
+
+Start narrow enough to learn quickly:
+
+- practicing architects,
+- small studios,
+- architecture students only as secondary usability participants,
+- early residential / small-building projects initially.
+
+Do not treat family access, teammates, or architecture students as market validation by themselves.
+
+Later expand deliberately into apartments, schools, stations, larger complexes, and other building types only after the core revision loop survives narrower testing.
+
+## Data to retain
+
+Only with explicit permission, retain structured/anonymized records such as:
+
+```text
+original design state
+→ project brief/context
+→ architect-confirmed intent
+→ change request
+→ candidate patches
+→ impact reports
+→ architect decision
+→ manual correction
+→ final accepted state
+```
+
+This is more useful than accumulating arbitrary floor plans because it captures **decision continuity**.
+
+## Kill / pivot criteria
+
+Change direction if repeated testing shows:
+
+- architects do not care about continuity enough to change workflow,
+- intent correction is slower than direct editing,
+- simple constraints explain nearly all useful decisions,
+- generated/recommended patches rarely become starting points,
+- impact explanations add little,
+- extraction correction is too expensive,
+- users refuse to bring a second real project,
+- interoperability friction overwhelms the value.
+
+If users clearly want the reasoning layer embedded inside Revit/Archicad/Snaptrude instead of a standalone product, treat that as a product-form signal, not automatically a thesis failure.
+
+## Claims we must not make yet
+
+Do not claim:
+
+- Archis understands architectural intent,
+- Archis preserves intent better than existing tools,
+- Archis saves a specific percentage of time,
+- architects prefer Archis,
+- the intent model is calibrated,
+- the system is production-safe for professional documentation,
+- the product has a moat,
+- willingness to pay has been proven.
+
+## Near-term validation output
+
+For each design partner, create one evidence packet containing:
+
+1. current revision workflow,
+2. original design state,
+3. requested change,
+4. architect-labeled priorities,
+5. Archis hypotheses,
+6. candidate/revision comparison,
+7. accepted/rejected decisions,
+8. correction notes,
+9. measured time/effort,
+10. whether they will use it again.
+
+That packet is more valuable than another polished demo video.

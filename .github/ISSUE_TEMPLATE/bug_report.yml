@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in Archis is broken or behaving incorrectly.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the behavior you saw and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How can we reproduce it?
+      placeholder: |
+        1. Open...
+        2. Click...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Blueprint import / extraction
+        - 2D editor
+        - 3D view
+        - Intent / change reasoning
+        - Constraints
+        - Authentication / persistence
+        - Export
+        - UI / UX
+        - Build / deployment
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Add screenshots, recordings, console output, or logs if useful.
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, OS, device, or relevant setup.
