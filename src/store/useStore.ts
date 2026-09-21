@@ -106,6 +106,14 @@ function revisionAuthor(user: any): string {
   return user?.displayName || user?.email || 'Architect';
 }
 
+function readRevisionHistory(value: unknown): RevisionHistory {
+  const history = value as Partial<RevisionHistory> | undefined;
+  if (history?.schemaVersion === 1 && Array.isArray(history.branches) && Array.isArray(history.revisions) && history.activeBranchId) {
+    return history as RevisionHistory;
+  }
+  return createRevisionHistory();
+}
+
 function makeRevision(
   state: Pick<StoreState, 'revisionHistory' | 'user'>,
   operations: ProjectRevision['operations'],
@@ -208,6 +216,8 @@ export const useStore = create<StoreState>((set, get) => ({
       const projectData = {
         userId: state.user.uid,
         model: state.model,
+        originalModel: state.originalModel,
+        revisionHistory: state.revisionHistory,
         blueprintUrl: state.blueprintUrl,
         updatedAt: serverTimestamp()
       };
@@ -233,8 +243,12 @@ export const useStore = create<StoreState>((set, get) => ({
       const snapshot = await getDoc(docRef);
       if (snapshot.exists()) {
         const data = snapshot.data();
+        const originalModel = migrateRectanglesToGraph({ ...(data.originalModel || data.model), project: { ...data.model.project, id } });
+        const revisionHistory = readRevisionHistory(data.revisionHistory);
         set({
-          model: migrateRectanglesToGraph({ ...data.model, project: { ...data.model.project, id } }),
+          model: materializeBranch(originalModel, revisionHistory),
+          originalModel,
+          revisionHistory,
           blueprintUrl: data.blueprintUrl,
           workspaceMode: "plan",
           activeLevelId: null,
