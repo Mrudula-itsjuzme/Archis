@@ -179,7 +179,7 @@ export interface ChangeImpactReport {
 
 export type RevisionSource = 'architect' | 'deterministic-engine' | 'inference' | 'import';
 export type RevisionStatus = 'proposed' | 'accepted' | 'rejected' | 'reverted';
-export type SpaceProperty = 'x' | 'y' | 'width' | 'height' | 'name';
+export type SpaceProperty = 'x' | 'y' | 'width' | 'height' | 'name' | 'type';
 
 /**
  * A deliberately small, inspectable operation for the current rectangular-space

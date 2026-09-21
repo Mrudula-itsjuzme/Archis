@@ -92,10 +92,10 @@ export function applyRevision(model: SemanticModel, revision: Pick<ProjectRevisi
 
 export function createSpacePropertyOperations(
   before: Space,
-  after: Pick<Space, SpaceProperty>,
+  after: Partial<Pick<Space, SpaceProperty>>,
 ): RevisionOperation[] {
-  const properties: SpaceProperty[] = ['x', 'y', 'width', 'height', 'name'];
-  return properties.flatMap(property => before[property] === after[property]
+  const properties: SpaceProperty[] = ['x', 'y', 'width', 'height', 'name', 'type'];
+  return properties.flatMap(property => after[property] === undefined || before[property] === after[property]
     ? []
     : [{
       kind: 'update-space-property' as const,
