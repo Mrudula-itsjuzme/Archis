@@ -1,8 +1,10 @@
 import { create } from 'zustand';
-import { SemanticModel, Space, VariantType, ChangeEvent, Project } from '../models/types';
+import { SemanticModel, Space, VariantType, ChangeEvent, Project, ProjectRevision, RevisionHistory, SpaceProperty } from '../models/types';
 import { migrateRectanglesToGraph } from '../utils/geometryGraph';
 import { initialModel, courtyardHouseProject, apartmentFloorProject, schoolWingProject } from './initialData';
 import type { Recommendation } from './gemini';
+import { appendRevision, createBranch, createRevisionHistory, createSpacePropertyOperations, getActiveBranch, materializeBranch, updateRevisionStatus } from '../engine/revisions';
+import { evaluateAllConstraints } from '../engine/constraints';
 
 interface StoreState {
   user: any;
@@ -82,6 +84,84 @@ interface StoreState {
   setEditorMode: (mode: 'select' | 'draw' | 'door' | 'window') => void;
   resetModel: () => void;
   applyVariant: (variantModel: SemanticModel, variantType: VariantType) => void;
+
+  // Revision history. Every accepted model change is a typed patch on a named branch.
+  revisionHistory: RevisionHistory;
+  revisionNotice: string | null;
+  createRevisionBranch: (name: string) => void;
+  switchRevisionBranch: (branchId: string) => void;
+  revertLatestRevision: () => void;
+  updateSpaceProperties: (id: string, updates: Partial<Pick<Space, SpaceProperty>>) => void;
+}
+
+function revisionId() {
+  return `revision-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function branchId() {
+  return `branch-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function revisionAuthor(user: any): string {
+  return user?.displayName || user?.email || 'Architect';
+}
+
+function makeRevision(
+  state: Pick<StoreState, 'revisionHistory' | 'user'>,
+  operations: ProjectRevision['operations'],
+  summary: string,
+  source: ProjectRevision['source'] = 'architect',
+): ProjectRevision {
+  const branch = getActiveBranch(state.revisionHistory);
+  return {
+    id: revisionId(),
+    branchId: branch.id,
+    parentRevisionId: branch.revisionIds.at(-1) ?? branch.baseRevisionId,
+    timestamp: Date.now(),
+    author: revisionAuthor(state.user),
+    source,
+    status: 'accepted',
+    summary,
+    operations,
+    affectedEntityIds: [...new Set(operations.map(operation => operation.spaceId))],
+    preservedConstraints: [],
+  };
+}
+
+function applyAcceptedRevision(
+  state: Pick<StoreState, 'originalModel' | 'revisionHistory'>,
+  revision: ProjectRevision,
+) {
+  const history = appendRevision(state.revisionHistory, revision);
+  const candidate = materializeBranch(state.originalModel, history);
+  const violations = evaluateAllConstraints(candidate)
+    .filter(({ constraint, result }) => constraint.type === 'HARD' && result.isViolated);
+
+  if (violations.length > 0) {
+    const rejectedHistory = updateRevisionStatus(history, revision.id, 'rejected');
+    return {
+      revisionHistory: rejectedHistory,
+      model: materializeBranch(state.originalModel, rejectedHistory),
+      revisionNotice: `Change not applied: ${violations[0].result.message || violations[0].constraint.description}`,
+      applied: false,
+    };
+  }
+
+  const preservedConstraints = evaluateAllConstraints(candidate)
+    .filter(({ constraint, result }) => constraint.type === 'HARD' && !result.isViolated)
+    .map(({ constraint }) => constraint.description);
+  const acceptedHistory = updateRevisionStatus(history, revision.id, 'accepted');
+  return {
+    revisionHistory: {
+      ...acceptedHistory,
+      revisions: acceptedHistory.revisions.map(item => item.id === revision.id
+        ? { ...item, preservedConstraints }
+        : item),
+    },
+    model: candidate,
+    revisionNotice: null,
+    applied: true,
+  };
 }
 
 // Helper to sync legacy fields with actual project hierarchy
@@ -188,6 +268,8 @@ export const useStore = create<StoreState>((set, get) => ({
   
   changeLedger: [],
   addChangeEvent: (event) => set((state) => ({ changeLedger: [event, ...state.changeLedger] })),
+  revisionHistory: createRevisionHistory(),
+  revisionNotice: null,
 
   blueprintUrl: null,
   blueprintOpacity: 0.4,
@@ -222,29 +304,25 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   applyRecommendation: (rec) => set((state) => {
-    const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
-    for (const change of rec.changes) {
-      for (const b of newModel.project.buildings) {
-        for (const l of b.levels) {
-          const space = l.spaces.find(s => s.id === change.spaceId);
-          if (space) {
-            if (change.type === 'resize') {
-              if (change.newWidth !== undefined) space.width = change.newWidth;
-              if (change.newHeight !== undefined) space.height = change.newHeight;
-            } else if (change.type === 'move') {
-              if (change.newX !== undefined) space.x = change.newX;
-              if (change.newY !== undefined) space.y = change.newY;
-            } else if (change.type === 'rename' && change.newName) {
-              space.name = change.newName;
-            }
-          }
-        }
+    const operations = rec.changes.flatMap(change => {
+      const space = state.model.rooms.find(room => room.id === change.spaceId);
+      if (!space) return [];
+      if (change.type === 'resize') {
+        return createSpacePropertyOperations(space, { width: change.newWidth, height: change.newHeight });
       }
-    }
-    const synced = syncLegacyFields(newModel);
-    // Remove applied recommendation from list
-    const remaining = state.recommendations.filter(r => r.id !== rec.id);
-    return { model: synced, recommendations: remaining };
+      if (change.type === 'move') {
+        return createSpacePropertyOperations(space, { x: change.newX, y: change.newY });
+      }
+      return createSpacePropertyOperations(space, { name: change.newName });
+    });
+    if (operations.length === 0) return { revisionNotice: 'Recommendation has no applicable changes.' };
+
+    const revision = makeRevision(state, operations, `Accept recommendation: ${rec.title}`, 'inference');
+    const applied = applyAcceptedRevision(state, revision);
+    return {
+      ...applied,
+      recommendations: applied.applied ? state.recommendations.filter(item => item.id !== rec.id) : state.recommendations,
+    };
   }),
 
   extractBlueprint: async () => {
@@ -343,63 +421,21 @@ export const useStore = create<StoreState>((set, get) => ({
     };
     return {
       model: JSON.parse(JSON.stringify(newModel)),
-      originalModel: newModel,
+      originalModel: JSON.parse(JSON.stringify(newModel)),
       activeVariant: "original",
-  previewVariantModel: null,
-  setPreviewVariantModel: (model) => set({ previewVariantModel: model }),
+      previewVariantModel: null,
       changeLedger: [],
+      revisionHistory: createRevisionHistory(),
+      revisionNotice: null,
       activeLevelId: null,
-  selectedSpaceId: null,
+      selectedSpaceId: null,
       hoveredSpaceId: null
     };
   }),
 
-  updateSpacePosition: (id, x, y) => set((state) => {
-    const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
-    let spaceName = 'Space';
-    
-    for (const b of newModel.project.buildings) {
-      for (const l of b.levels) {
-        if (l.id === newModel.activeLevelId) {
-          const space = l.spaces.find(s => s.id === id);
-          if (space) {
-            spaceName = space.name;
-            space.x = x;
-            space.y = y;
-          }
-        }
-      }
-    }
-    
-    const syncedModel = syncLegacyFields(newModel);
-    
-    // Naive intent evaluation for demo
-    const isPrivacyWeakened = spaceName.toLowerCase().includes('bed') && Math.random() > 0.5;
-    
-    const event: ChangeEvent = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      description: `YOU MOVED ${spaceName.toUpperCase()}`,
-      details: [
-        { category: 'Geometry', message: 'Position updated' },
-        { category: 'Intent', message: isPrivacyWeakened ? 'Privacy priority weakened' : 'Privacy maintained', metric: isPrivacyWeakened ? '⚠️' : '✓' }
-      ]
-    };
-    
-    return { model: syncedModel, changeLedger: [event, ...state.changeLedger].slice(0, 5) };
-  }),
+  updateSpacePosition: (id, x, y) => get().updateSpaceProperties(id, { x, y }),
 
-  updateSpaceDimensions: (id, width, height) => set((state) => {
-    const newModel = JSON.parse(JSON.stringify(state.model)) as SemanticModel;
-    for (const b of newModel.project.buildings) {
-      for (const l of b.levels) {
-        if (l.id === newModel.activeLevelId) {
-          l.spaces = l.spaces.map(s => s.id === id ? { ...s, width, height } : s);
-        }
-      }
-    }
-    return { model: syncLegacyFields(newModel) };
-  }),
+  updateSpaceDimensions: (id, width, height) => get().updateSpaceProperties(id, { width, height }),
 
   moveVertex: (vertexId, nx, ny) => set((state) => {
     if (!state.model.vertices) return {};
@@ -438,13 +474,93 @@ export const useStore = create<StoreState>((set, get) => ({
   resetModel: () => set((state) => ({ 
     model: JSON.parse(JSON.stringify(state.originalModel)),
     activeVariant: "original",
-  previewVariantModel: null,
-  setPreviewVariantModel: (model) => set({ previewVariantModel: model }),
-    changeLedger: []
+    previewVariantModel: null,
+    changeLedger: [],
+    revisionHistory: createRevisionHistory(),
+    revisionNotice: null,
   })),
 
-  applyVariant: (variantModel, variantType) => set({ 
-    model: variantModel,
-    activeVariant: variantType
+  applyVariant: (variantModel, variantType) => set((state) => {
+    const nextHistory = createBranch(
+      state.revisionHistory,
+      variantType === 'original' ? 'Architect draft option' : `Option ${variantType}`,
+      branchId(),
+    );
+    const operations = state.model.rooms.flatMap(space => {
+      const candidate = variantModel.rooms.find(room => room.id === space.id);
+      return candidate ? createSpacePropertyOperations(space, candidate) : [];
+    });
+    if (operations.length === 0) return { revisionHistory: nextHistory, activeVariant: variantType };
+
+    const revision = makeRevision(
+      { ...state, revisionHistory: nextHistory },
+      operations,
+      `Accept ${variantType} option`,
+      'deterministic-engine',
+    );
+    const applied = applyAcceptedRevision({ ...state, revisionHistory: nextHistory }, revision);
+    return { ...applied, activeVariant: applied.applied ? variantType : state.activeVariant };
+  }),
+
+  createRevisionBranch: (name) => set((state) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) return { revisionNotice: 'A branch needs a name.' };
+    return {
+      revisionHistory: createBranch(state.revisionHistory, trimmedName, branchId()),
+      revisionNotice: null,
+    };
+  }),
+
+  switchRevisionBranch: (id) => set((state) => {
+    if (!state.revisionHistory.branches.some(branch => branch.id === id)) {
+      return { revisionNotice: 'That branch is no longer available.' };
+    }
+    const revisionHistory = { ...state.revisionHistory, activeBranchId: id };
+    return {
+      revisionHistory,
+      model: materializeBranch(state.originalModel, revisionHistory),
+      previewVariantModel: null,
+      revisionNotice: null,
+    };
+  }),
+
+  revertLatestRevision: () => set((state) => {
+    const branch = getActiveBranch(state.revisionHistory);
+    const latest = [...branch.revisionIds].reverse()
+      .map(id => state.revisionHistory.revisions.find(revision => revision.id === id))
+      .find(revision => revision?.status === 'accepted');
+    if (!latest) return { revisionNotice: 'There is no accepted change to revert on this branch.' };
+    const revisionHistory = updateRevisionStatus(state.revisionHistory, latest.id, 'reverted');
+    return {
+      revisionHistory,
+      model: materializeBranch(state.originalModel, revisionHistory),
+      revisionNotice: `Reverted: ${latest.summary}`,
+    };
+  }),
+
+  updateSpaceProperties: (id, updates) => set((state) => {
+    const space = state.model.rooms.find(room => room.id === id);
+    if (!space) return { revisionNotice: 'That space is no longer available.' };
+    if (space.isLocked) return { revisionNotice: `${space.name} is locked and cannot be changed.` };
+
+    const operations = createSpacePropertyOperations(space, updates);
+    if (operations.length === 0) return {};
+    const revision = makeRevision(state, operations, `Edit ${space.name}`);
+    const applied = applyAcceptedRevision(state, revision);
+    const event: ChangeEvent = {
+      id: revision.id,
+      timestamp: revision.timestamp,
+      description: applied.applied ? revision.summary : `Rejected edit to ${space.name}`,
+      details: applied.applied
+        ? [
+          { category: 'Geometry', message: `${operations.length} property change${operations.length === 1 ? '' : 's'} recorded` },
+          { category: 'Constraint', message: 'Hard constraints preserved', metric: '✓' },
+        ]
+        : [{ category: 'Constraint', message: applied.revisionNotice || 'Hard constraint conflict', metric: '⚠️' }],
+    };
+    return {
+      ...applied,
+      changeLedger: [event, ...state.changeLedger].slice(0, 20),
+    };
   }),
 }));
