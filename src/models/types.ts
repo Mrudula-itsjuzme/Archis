@@ -176,3 +176,51 @@ export interface ChangeImpactReport {
   hardConstraintsSatisfied: boolean;
   protectedIntentPreserved: number;
 }
+
+export type RevisionSource = 'architect' | 'deterministic-engine' | 'inference' | 'import';
+export type RevisionStatus = 'proposed' | 'accepted' | 'rejected' | 'reverted';
+export type SpaceProperty = 'x' | 'y' | 'width' | 'height' | 'name';
+
+/**
+ * A deliberately small, inspectable operation for the current rectangular-space
+ * model. More geometry operations can be added without making a branch a full
+ * copy of the project state.
+ */
+export interface UpdateSpacePropertyOperation {
+  kind: 'update-space-property';
+  spaceId: string;
+  property: SpaceProperty;
+  before: number | string;
+  after: number | string;
+}
+
+export type RevisionOperation = UpdateSpacePropertyOperation;
+
+export interface ProjectRevision {
+  id: string;
+  branchId: string;
+  parentRevisionId: string | null;
+  timestamp: number;
+  author: string;
+  source: RevisionSource;
+  status: RevisionStatus;
+  summary: string;
+  operations: RevisionOperation[];
+  affectedEntityIds: string[];
+  preservedConstraints: string[];
+  tradeoff?: string;
+}
+
+export interface ProjectBranch {
+  id: string;
+  name: string;
+  baseRevisionId: string | null;
+  revisionIds: string[];
+}
+
+export interface RevisionHistory {
+  schemaVersion: 1;
+  activeBranchId: string;
+  branches: ProjectBranch[];
+  revisions: ProjectRevision[];
+}
