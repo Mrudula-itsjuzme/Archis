@@ -1,128 +1,120 @@
-import { SemanticModel, Constraint, ConstraintResult, Room } from '../models/types';
+import { Constraint, ConstraintResult, SemanticModel, Space } from '../models/types';
+import {
+  getInvalidDimensionNames,
+  getSpaceArea,
+  getSpaceOverlap,
+  hasExplicitMinimumArea,
+  isSpaceBelowMinimumArea,
+} from './spaceValidation';
 
-// Helper for AABB intersection
-function checkAdjacency(r1?: Room, r2?: Room): boolean {
-  if (!r1 || !r2) return false;
-  const buffer = 0.1; // 10cm tolerance
-  return (
-    r1.x < r2.x + r2.width + buffer &&
-    r1.x + r1.width > r2.x - buffer &&
-    r1.y < r2.y + r2.height + buffer &&
-    r1.y + r1.height > r2.y - buffer
-  );
+function formatArea(area: number): string {
+  return `${area.toFixed(2)} m²`;
+}
+
+function violatedSpaceIds(spaces: Space[]): Pick<ConstraintResult, 'violatingSpaceIds' | 'violatingRoomIds'> {
+  const ids = spaces.map(space => space.id);
+  return { violatingSpaceIds: ids, violatingRoomIds: ids };
+}
+
+function shareRectangleEdge(first?: Space, second?: Space): boolean {
+  if (!first || !second) return false;
+
+  const overlap = getSpaceOverlap(first, second);
+  if (overlap.area > 0) return true;
+
+  const verticalContact =
+    (first.x + first.width === second.x || second.x + second.width === first.x) &&
+    Math.min(first.y + first.height, second.y + second.height) > Math.max(first.y, second.y);
+  const horizontalContact =
+    (first.y + first.height === second.y || second.y + second.height === first.y) &&
+    Math.min(first.x + first.width, second.x + second.width) > Math.max(first.x, second.x);
+
+  return verticalContact || horizontalContact;
 }
 
 export function getDynamicConstraints(model: SemanticModel): Constraint[] {
-  const constraints: Constraint[] = [];
+  const constraints: Constraint[] = [
+    {
+      id: 'positive-space-dimensions',
+      type: 'HARD',
+      description: 'Spaces must have positive finite width and height',
+      evaluate: (candidate) => {
+        const invalidSpaces = candidate.rooms.filter(space => getInvalidDimensionNames(space).length > 0);
+        if (!invalidSpaces.length) return { isViolated: false };
 
-  // 1. Generic no-overlap constraint
-  constraints.push({
-    id: 'no-overlap',
-    type: 'HARD',
-    description: 'Rooms should not overlap substantially',
-    evaluate: (m) => {
-      for (let i = 0; i < m.rooms.length; i++) {
-        for (let j = i + 1; j < m.rooms.length; j++) {
-          const r1 = m.rooms[i];
-          const r2 = m.rooms[j];
-          const buffer = -0.5; // Allow minor overlaps but flag > 0.5m
-          if (
-            r1.x < r2.x + r2.width + buffer &&
-            r1.x + r1.width > r2.x - buffer &&
-            r1.y < r2.y + r2.height + buffer &&
-            r1.y + r1.height > r2.y - buffer
-          ) {
-            return {
-              isViolated: true,
-              message: `${r1.name} and ${r2.name} are overlapping.`,
-              violatingRoomIds: [r1.id, r2.id]
-            };
+        const first = invalidSpaces[0];
+        const invalidDimensions = getInvalidDimensionNames(first).join(' and ');
+        return {
+          isViolated: true,
+          message: `${first.name} has an invalid ${invalidDimensions}. Width and height must both be positive finite values.`,
+          ...violatedSpaceIds(invalidSpaces),
+        };
+      },
+    },
+    {
+      id: 'no-space-overlap',
+      type: 'HARD',
+      description: 'Spaces must not overlap',
+      evaluate: (candidate) => {
+        for (let index = 0; index < candidate.rooms.length; index += 1) {
+          const first = candidate.rooms[index];
+          for (let nextIndex = index + 1; nextIndex < candidate.rooms.length; nextIndex += 1) {
+            const second = candidate.rooms[nextIndex];
+            const overlap = getSpaceOverlap(first, second);
+            if (overlap.area > 0) {
+              return {
+                isViolated: true,
+                message: `${first.name} and ${second.name} overlap by ${formatArea(overlap.area)}.`,
+                ...violatedSpaceIds([first, second]),
+              };
+            }
           }
         }
-      }
-      return { isViolated: false };
-    }
-  });
 
-  // 2. Minimum Area Checks based on room types present
-  const classrooms = model.rooms.filter(r => r.name.toLowerCase().includes('class'));
-  if (classrooms.length > 0) {
-    constraints.push({
-      id: 'classroom-area',
-      type: 'HARD',
-      description: 'Classrooms >= 30 m²',
-      evaluate: (m) => {
-        const tooSmall = m.rooms.filter(r => r.name.toLowerCase().includes('class') && (r.width * r.height) < 30);
-        if (tooSmall.length > 0) {
-          return {
-            isViolated: true,
-            message: `${tooSmall[0].name} is ${(tooSmall[0].width * tooSmall[0].height).toFixed(1)} m², below 30 m² minimum.`,
-            violatingRoomIds: tooSmall.map(r => r.id)
-          };
-        }
         return { isViolated: false };
-      }
+      },
+    },
+  ];
+
+  if (model.rooms.some(hasExplicitMinimumArea)) {
+    constraints.push({
+      id: 'explicit-minimum-area',
+      type: 'HARD',
+      description: 'Spaces with an explicit minimum area must meet it',
+      evaluate: (candidate) => {
+        const tooSmall = candidate.rooms.filter(isSpaceBelowMinimumArea);
+        if (!tooSmall.length) return { isViolated: false };
+
+        const first = tooSmall[0];
+        const minimumArea = first.minArea;
+        if (minimumArea === undefined) return { isViolated: false };
+        return {
+          isViolated: true,
+          message: `${first.name} is ${formatArea(getSpaceArea(first))}, below its explicit ${formatArea(minimumArea)} minimum.`,
+          ...violatedSpaceIds(tooSmall),
+        };
+      },
     });
   }
 
-  const labs = model.rooms.filter(r => r.name.toLowerCase().includes('lab'));
-  if (labs.length > 0) {
-    constraints.push({
-      id: 'lab-area',
-      type: 'HARD',
-      description: 'Laboratories >= 40 m²',
-      evaluate: (m) => {
-        const tooSmall = m.rooms.filter(r => r.name.toLowerCase().includes('lab') && (r.width * r.height) < 40);
-        if (tooSmall.length > 0) {
-          return {
-            isViolated: true,
-            message: `${tooSmall[0].name} is ${(tooSmall[0].width * tooSmall[0].height).toFixed(1)} m², below 40 m² minimum.`,
-            violatingRoomIds: tooSmall.map(r => r.id)
-          };
-        }
-        return { isViolated: false };
-      }
-    });
-  }
-
-  // 3. Residential fallback constraints (only if residential rooms exist)
-  const hasLiving = model.rooms.some(r => r.name.toLowerCase().includes('living'));
-  const hasKitchen = model.rooms.some(r => r.name.toLowerCase().includes('kitchen'));
+  const hasLiving = model.rooms.some(room => room.name.toLowerCase().includes('living'));
+  const hasKitchen = model.rooms.some(room => room.name.toLowerCase().includes('kitchen'));
   if (hasLiving && hasKitchen) {
     constraints.push({
       id: 'kitchen-living-adj',
       type: 'HARD',
-      description: 'Kitchen must be adjacent to Living Room',
-      evaluate: (m) => {
-        const living = m.rooms.find(r => r.name.toLowerCase().includes('living'));
-        const kitchen = m.rooms.find(r => r.name.toLowerCase().includes('kitchen'));
-        const isAdjacent = checkAdjacency(living, kitchen);
+      description: 'Kitchen must share an edge with Living Room',
+      evaluate: (candidate) => {
+        const living = candidate.rooms.find(room => room.name.toLowerCase().includes('living'));
+        const kitchen = candidate.rooms.find(room => room.name.toLowerCase().includes('kitchen'));
+        const isAdjacent = shareRectangleEdge(living, kitchen);
+
         return {
           isViolated: !isAdjacent,
-          message: !isAdjacent ? 'Kitchen is not adjacent to Living Room.' : undefined,
-          violatingRoomIds: !isAdjacent && living && kitchen ? [living.id, kitchen.id] : []
+          message: !isAdjacent ? 'Kitchen does not share an edge with Living Room.' : undefined,
+          ...(living && kitchen ? violatedSpaceIds([living, kitchen]) : {}),
         };
-      }
-    });
-  }
-
-  const bedrooms = model.rooms.filter(r => r.name.toLowerCase().includes('bed'));
-  if (bedrooms.length > 0) {
-    constraints.push({
-      id: 'bedroom-area',
-      type: 'HARD',
-      description: 'Bedrooms >= 10 m²',
-      evaluate: (m) => {
-        const tooSmall = m.rooms.filter(r => r.name.toLowerCase().includes('bed') && (r.width * r.height) < 10);
-        if (tooSmall.length > 0) {
-          return {
-            isViolated: true,
-            message: `${tooSmall[0].name} is ${(tooSmall[0].width * tooSmall[0].height).toFixed(1)} m², below 10 m² minimum.`,
-            violatingRoomIds: tooSmall.map(r => r.id)
-          };
-        }
-        return { isViolated: false };
-      }
+      },
     });
   }
 
@@ -131,8 +123,8 @@ export function getDynamicConstraints(model: SemanticModel): Constraint[] {
 
 export function evaluateAllConstraints(model: SemanticModel) {
   const constraints = getDynamicConstraints(model);
-  return constraints.map(c => ({
-    constraint: c,
-    result: c.evaluate(model)
+  return constraints.map(constraint => ({
+    constraint,
+    result: constraint.evaluate(model),
   }));
 }
