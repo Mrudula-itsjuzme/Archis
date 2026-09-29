@@ -304,12 +304,10 @@ export const useStore = create<StoreState>((set, get) => ({
   fetchRecommendations: async () => {
     const { model } = useStore.getState();
     if (model.rooms.length === 0) return;
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
-    if (!apiKey) return;
     set({ isLoadingRecommendations: true });
     try {
       const { getRecommendations } = await import('./gemini');
-      const recs = await getRecommendations(model.rooms, apiKey);
+      const recs = await getRecommendations(model.rooms);
       set({ recommendations: recs, isLoadingRecommendations: false });
     } catch (err) {
       console.error('Failed to fetch recommendations:', err);
@@ -347,20 +345,11 @@ export const useStore = create<StoreState>((set, get) => ({
     
     // Check if it's a data URL (needed for Gemini)
     const isDataUrl = blueprintUrl.startsWith('data:');
-    
-    let apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || '';
-    if (isDataUrl && !import.meta.env.VITE_GEMINI_API_KEY) {
-       const userKey = window.prompt("Enter Gemini API Key for REAL AI extraction (or leave blank to use simulated demo):", apiKey);
-       if (userKey !== null) {
-          apiKey = userKey.trim();
-          if (apiKey) localStorage.setItem('GEMINI_API_KEY', apiKey);
-       }
-    }
 
-    if (apiKey && isDataUrl) {
+    if (isDataUrl) {
       try {
         const { extractBlueprintWithGemini } = await import('./gemini');
-        const extraction = await extractBlueprintWithGemini(blueprintUrl, apiKey);
+        const extraction = await extractBlueprintWithGemini(blueprintUrl);
         
         const rooms = extraction.rooms;
         

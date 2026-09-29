@@ -49,7 +49,7 @@ export interface ExtractionResult {
   notes: string;
 }
 
-export async function extractBlueprintWithGemini(base64Image: string, _apiKey: string): Promise<ExtractionResult> {
+export async function extractBlueprintWithGemini(base64Image: string): Promise<ExtractionResult> {
   const res = await fetch('/api/extract', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -68,12 +68,12 @@ export async function extractBlueprintWithGemini(base64Image: string, _apiKey: s
 }
 
 // Keep legacy export for any remaining callers
-export async function extractRoomsWithGemini(base64Image: string, apiKey: string): Promise<Space[]> {
-  const result = await extractBlueprintWithGemini(base64Image, apiKey);
+export async function extractRoomsWithGemini(base64Image: string): Promise<Space[]> {
+  const result = await extractBlueprintWithGemini(base64Image);
   return result.rooms;
 }
 
-export async function getRecommendations(rooms: Space[], _apiKey: string): Promise<Recommendation[]> {
+export async function getRecommendations(rooms: Space[]): Promise<Recommendation[]> {
   const res = await fetch('/api/recommendations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
