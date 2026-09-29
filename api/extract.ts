@@ -61,8 +61,16 @@ export default async function handler(req: Request) {
   
   try {
     const { base64Image } = await req.json();
-    const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-    
+    if (typeof base64Image !== 'string' || !/^data:image\/(png|jpe?g|webp);base64,/.test(base64Image)) {
+      return new Response(JSON.stringify({ error: 'Invalid image payload' }), { status: 400 });
+    }
+    // ~15MB base64 string ≈ 10MB decoded image, well above any real floor-plan scan
+    if (base64Image.length > 15_000_000) {
+      return new Response(JSON.stringify({ error: 'Image too large' }), { status: 413 });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
     }

@@ -9,7 +9,21 @@ export default async function handler(req: Request) {
   
   try {
     const { rooms } = await req.json();
-    const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!Array.isArray(rooms) || rooms.length === 0 || rooms.length > 200) {
+      return new Response(JSON.stringify({ error: 'Invalid rooms payload' }), { status: 400 });
+    }
+    const isValidRoom = (r: any) =>
+      r && typeof r === 'object' &&
+      typeof r.id === 'string' && r.id.length <= 100 &&
+      typeof r.name === 'string' && r.name.length <= 200 &&
+      typeof r.type === 'string' && r.type.length <= 50 &&
+      Number.isFinite(r.x) && Number.isFinite(r.y) &&
+      Number.isFinite(r.width) && Number.isFinite(r.height);
+    if (!rooms.every(isValidRoom)) {
+      return new Response(JSON.stringify({ error: 'Invalid room entry' }), { status: 400 });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
     
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), { status: 500 });
